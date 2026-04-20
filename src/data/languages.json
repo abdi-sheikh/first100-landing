@@ -149,6 +149,76 @@
       "playStore": null,
       "wordCount": 100,
       "featured": false
+    },
+    {
+      "slug": "afrikaans",
+      "name": "Afrikaans",
+      "nativeName": "Afrikaans",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "amharic",
+      "name": "Amharic",
+      "nativeName": "አማርኛ",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "bengali",
+      "name": "Bengali",
+      "nativeName": "বাংলা",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "indonesian",
+      "name": "Indonesian",
+      "nativeName": "Bahasa Indonesia",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "malay",
+      "name": "Malay",
+      "nativeName": "Bahasa Melayu",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "thai",
+      "name": "Thai",
+      "nativeName": "ไทย",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
+    },
+    {
+      "slug": "zulu",
+      "name": "Zulu",
+      "nativeName": "isiZulu",
+      "status": "coming-soon",
+      "appStore": null,
+      "playStore": null,
+      "wordCount": 100,
+      "featured": false
     }
   ]
 }
