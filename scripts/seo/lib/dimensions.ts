@@ -17,6 +17,7 @@ export const DIMENSIONS: Dimension[] = [
   { id: 6, name: 'Age-stage parenting',        example: 'best app for 2 year old',          sharing: 'shared',          weight: 1.0 },
   { id: 7, name: 'Comparison / review',        example: 'best toddler language app 2026',   sharing: 'hybrid',          weight: 1.0 },
   { id: 8, name: 'Paywall-aligned',            example: 'free toddler language app no ads', sharing: 'shared',          weight: 1.0 },
+  { id: 9, name: 'Language science & pedagogy', example: 'how do children learn language',   sharing: 'shared',          weight: 1.1 },
 ];
 
 export function getDimension(id: number): Dimension {

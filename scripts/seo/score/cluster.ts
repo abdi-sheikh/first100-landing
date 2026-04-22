@@ -37,7 +37,7 @@ export async function embedKeywords(keywords: string[]): Promise<Map<string, num
 }
 
 function suggestContentType(dimension: number): Cluster['suggestedContentType'] {
-  if (dimension === 4 || dimension === 6 || dimension === 8) return 'pillar';
+  if (dimension === 4 || dimension === 6 || dimension === 8 || dimension === 9) return 'pillar';
   if (dimension === 5) return 'programmatic';
   return 'landing-page';
 }
