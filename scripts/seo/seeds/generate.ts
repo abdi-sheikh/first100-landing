@@ -33,17 +33,15 @@ Example output:
 }
 
 export function parseSeedResponse(raw: string): string[] {
-  const arr = z.array(z.string()).parse(JSON.parse(raw));
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const s of arr) {
-    const lower = s.trim().toLowerCase();
-    if (lower.length === 0) continue;
-    if (seen.has(lower)) continue;
-    seen.add(lower);
-    out.push(lower);
-  }
-  return out;
+  return extractSeeds(JSON.parse(raw));
+}
+
+export function seedsToCsv(seeds: Seed[]): string {
+  const header = 'language,dimension,seed\n';
+  const rows = seeds
+    .map(s => `${s.language},${s.dimension},"${s.seed.replace(/"/g, '""')}"`)
+    .join('\n');
+  return header + rows + '\n';
 }
 
 async function generateSeedsForDimension(
@@ -58,16 +56,33 @@ async function generateSeedsForDimension(
     temperature: 0.7,
     response_format: { type: 'json_object' },
   });
-  const raw = response.choices[0].message.content ?? '[]';
+  const raw = response.choices[0].message.content;
+  if (!raw) {
+    throw new Error(`Empty LLM response for dimension ${dimension.id} (${dimension.name})`);
+  }
   // Model may wrap array in an object key; handle both
   try {
     const parsed = JSON.parse(raw);
     const arr = Array.isArray(parsed) ? parsed : (parsed.seeds ?? parsed.queries ?? parsed.keywords ?? []);
-    return parseSeedResponse(JSON.stringify(arr));
+    return extractSeeds(arr);
   } catch (err) {
     console.error(`Failed to parse seeds for dimension ${dimension.id}: ${raw}`);
     throw err;
   }
+}
+
+function extractSeeds(value: unknown): string[] {
+  const arr = z.array(z.string()).parse(value);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const s of arr) {
+    const lower = s.trim().toLowerCase();
+    if (lower.length === 0) continue;
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+    out.push(lower);
+  }
+  return out;
 }
 
 export async function generateAllSeeds(languageSlug: string): Promise<Seed[]> {
@@ -91,14 +106,6 @@ export async function generateAllSeeds(languageSlug: string): Promise<Seed[]> {
   return seeds;
 }
 
-function toCsv(seeds: Seed[]): string {
-  const header = 'language,dimension,seed\n';
-  const rows = seeds
-    .map(s => `${s.language},${s.dimension},"${s.seed.replace(/"/g, '""')}"`)
-    .join('\n');
-  return header + rows + '\n';
-}
-
 async function main() {
   const { values } = parseArgs({
     options: { language: { type: 'string', default: 'somali' } },
@@ -108,7 +115,7 @@ async function main() {
   const seeds = await generateAllSeeds(languageSlug);
   mkdirSync(paths.data, { recursive: true });
   const outPath = resolve(paths.data, `seeds-${languageSlug}.csv`);
-  writeFileSync(outPath, toCsv(seeds));
+  writeFileSync(outPath, seedsToCsv(seeds));
   console.log(`Wrote ${seeds.length} seeds to ${outPath}`);
 }
 

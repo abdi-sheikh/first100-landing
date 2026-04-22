@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSeedPrompt, parseSeedResponse } from '../../scripts/seo/seeds/generate.js';
+import { buildSeedPrompt, parseSeedResponse, seedsToCsv } from '../../scripts/seo/seeds/generate.js';
+import type { Seed } from '../../scripts/seo/lib/types.js';
 import { getDimension } from '../../scripts/seo/lib/dimensions.js';
 import { getLanguage } from '../../scripts/seo/lib/languages.js';
 
@@ -33,4 +34,13 @@ test('parseSeedResponse deduplicates and lowercases', () => {
 
 test('parseSeedResponse throws on malformed input', () => {
   assert.throws(() => parseSeedResponse('not json'));
+});
+
+test('seedsToCsv escapes embedded quotes', () => {
+  const seeds: Seed[] = [
+    { language: 'somali', dimension: 1, seed: 'what\'s the "best" somali app' },
+  ];
+  const csv = seedsToCsv(seeds);
+  assert.match(csv, /""best""/);
+  assert.match(csv, /^language,dimension,seed\n/);
 });
