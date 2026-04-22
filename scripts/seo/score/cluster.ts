@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { writeFileSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { paths, env } from '../lib/config.js';
+import { paths, env, isMainModule } from '../lib/config.js';
 import type { Cluster } from '../lib/types.js';
 import type { ScoredKeyword } from './prioritize.js';
 
@@ -137,7 +137,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

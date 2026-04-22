@@ -4,7 +4,7 @@ import { parseArgs } from 'node:util';
 import { getDimension } from '../lib/dimensions.js';
 import { getLanguage } from '../lib/languages.js';
 import { openCache, listByLanguage, closeCache } from '../validate/cache.js';
-import { paths } from '../lib/config.js';
+import { paths, isMainModule } from '../lib/config.js';
 import type { ValidatedKeyword } from '../lib/types.js';
 
 export function computeScore(kw: ValidatedKeyword): number {
@@ -62,7 +62,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

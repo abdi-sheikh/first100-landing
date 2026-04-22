@@ -2,7 +2,7 @@ import { request } from 'undici';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { paths, env } from '../lib/config.js';
+import { paths, env, isMainModule } from '../lib/config.js';
 import { openCache, getCached, putCached, closeCache, listByLanguage } from './cache.js';
 import type { Candidate, ValidatedKeyword } from '../lib/types.js';
 
@@ -184,7 +184,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

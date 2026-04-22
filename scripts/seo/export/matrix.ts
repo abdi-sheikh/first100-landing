@@ -1,7 +1,7 @@
 import { stringify } from 'csv-stringify/sync';
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
-import { paths } from '../lib/config.js';
+import { paths, isMainModule } from '../lib/config.js';
 import { getDimension } from '../lib/dimensions.js';
 import type { Cluster } from '../lib/types.js';
 
@@ -63,7 +63,7 @@ async function main() {
   console.log(`  ${mdPath}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

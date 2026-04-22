@@ -2,7 +2,7 @@ import { request } from 'undici';
 import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { paths } from '../lib/config.js';
+import { paths, isMainModule } from '../lib/config.js';
 import type { Seed, Candidate } from '../lib/types.js';
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -127,7 +127,7 @@ async function main() {
   console.log(`Wrote ${final.length} candidates to ${outPath}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

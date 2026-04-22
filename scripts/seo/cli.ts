@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { paths } from './lib/config.js';
+import { paths, isMainModule } from './lib/config.js';
 
 export interface CliArgs {
   language: string;
@@ -60,7 +60,7 @@ async function main() {
   console.log('\nPipeline complete.');
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { parseArgs } from 'node:util';
 import { DIMENSIONS, getDimension, type Dimension } from '../lib/dimensions.js';
 import { LANGUAGES, getLanguage, type Language } from '../lib/languages.js';
-import { paths, env } from '../lib/config.js';
+import { paths, env, isMainModule } from '../lib/config.js';
 import type { Seed } from '../lib/types.js';
 
 const SEEDS_PER_DIMENSION = 40;
@@ -119,7 +119,7 @@ async function main() {
   console.log(`Wrote ${seeds.length} seeds to ${outPath}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMainModule(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

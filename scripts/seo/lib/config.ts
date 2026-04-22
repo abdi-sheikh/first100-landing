@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,3 +25,13 @@ export const env = {
   get openaiKey() { return requireEnv('OPENAI_API_KEY'); },
   get keywordsEverywhereKey() { return requireEnv('KEYWORDS_EVERYWHERE_API_KEY'); },
 };
+
+export function isMainModule(importMetaUrl: string): boolean {
+  const arg = process.argv[1];
+  if (!arg) return false;
+  try {
+    return importMetaUrl === pathToFileURL(resolve(arg)).href;
+  } catch {
+    return false;
+  }
+}
