@@ -125,54 +125,63 @@ async function main() {
   console.log(`Pre-filter: ${raw.length} → ${filtered.length} candidates`);
 
   const cache = openCache(paths.database);
-  const needsValidation: Candidate[] = [];
-  const cached: ValidatedKeyword[] = [];
+  try {
+    const needsValidation: Candidate[] = [];
+    const cached: ValidatedKeyword[] = [];
 
-  for (const c of filtered) {
-    const hit = getCached(cache, c.keyword, country, dataSource);
-    if (hit) {
-      cached.push(hit);
-    } else {
-      needsValidation.push(c);
+    for (const c of filtered) {
+      const hit = getCached(cache, c.keyword, country, dataSource);
+      if (hit) {
+        cached.push(hit);
+      } else {
+        needsValidation.push(c);
+      }
     }
-  }
-  console.log(`Cache hits: ${cached.length}, cache misses: ${needsValidation.length}`);
+    console.log(`Cache hits: ${cached.length}, cache misses: ${needsValidation.length}`);
 
-  if (dryRun) {
-    console.log(`DRY RUN — would spend ${needsValidation.length} credits.`);
+    if (dryRun) {
+      console.log(`DRY RUN — would spend ${needsValidation.length} credits. Re-run without --dry-run to validate.`);
+      return;
+    }
+
+    const chunks = chunkKeywords(needsValidation, CHUNK_SIZE);
+    let validatedCount = 0;
+    let unmatchedCount = 0;
+    for (const [i, chunk] of chunks.entries()) {
+      console.log(`  Chunk ${i + 1}/${chunks.length} (${chunk.length} keywords)...`);
+      const parsed = await validateChunk(chunk.map(c => c.keyword), country, dataSource);
+      const byKeyword = new Map(parsed.map(p => [p.keyword, p]));
+      const now = new Date().toISOString();
+      for (const c of chunk) {
+        const data = byKeyword.get(c.keyword);
+        if (!data) {
+          unmatchedCount++;
+          continue;
+        }
+        const validated: ValidatedKeyword = {
+          keyword: c.keyword,
+          language: c.language,
+          dimension: c.dimension,
+          volume: data.volume,
+          cpc: data.cpc,
+          competition: data.competition,
+          trend12mo: data.trend12mo,
+          sources: c.sources,
+          country,
+          dataSource,
+          validatedAt: now,
+        };
+        putCached(cache, validated);
+        validatedCount++;
+      }
+    }
+    console.log(`Validated ${validatedCount} keywords (${cached.length} cache hits).`);
+    if (unmatchedCount > 0) {
+      console.warn(`  ${unmatchedCount} keywords submitted but not returned by KE (likely normalized differently)`);
+    }
+  } finally {
     closeCache(cache);
-    return;
   }
-
-  const chunks = chunkKeywords(needsValidation, CHUNK_SIZE);
-  let validatedCount = 0;
-  for (const [i, chunk] of chunks.entries()) {
-    console.log(`  Chunk ${i + 1}/${chunks.length} (${chunk.length} keywords)...`);
-    const parsed = await validateChunk(chunk.map(c => c.keyword), country, dataSource);
-    const byKeyword = new Map(parsed.map(p => [p.keyword, p]));
-    const now = new Date().toISOString();
-    for (const c of chunk) {
-      const data = byKeyword.get(c.keyword);
-      if (!data) continue;
-      const validated: ValidatedKeyword = {
-        keyword: c.keyword,
-        language: c.language,
-        dimension: c.dimension,
-        volume: data.volume,
-        cpc: data.cpc,
-        competition: data.competition,
-        trend12mo: data.trend12mo,
-        sources: c.sources,
-        country,
-        dataSource,
-        validatedAt: now,
-      };
-      putCached(cache, validated);
-      validatedCount++;
-    }
-  }
-  console.log(`Validated ${validatedCount} keywords (${cached.length} cache hits).`);
-  closeCache(cache);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
