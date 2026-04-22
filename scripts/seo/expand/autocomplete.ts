@@ -6,8 +6,10 @@ import { paths, isMainModule } from '../lib/config.js';
 import type { Seed, Candidate } from '../lib/types.js';
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const RATE_LIMIT_MS = 120; // ~8 req/sec, polite
+const RATE_LIMIT_MS = 200; // ~5 req/sec, more headroom against rate limiting
 const BATCH_SIZE = 20;
+const BACKOFF_MS = 30_000; // 30 seconds after a rate limit hit
+const MAX_CONSECUTIVE_FAILURES = 3; // abort if Google keeps refusing
 
 export function expandSeedLocally(seed: string): string[] {
   const variants = [seed];
@@ -42,17 +44,23 @@ export function dedupeKeywords(keywords: string[]): string[] {
   return out;
 }
 
+class RateLimitedError extends Error {
+  constructor(query: string) {
+    super(`Google returned rate-limit page for "${query}"`);
+  }
+}
+
 async function fetchSuggestions(query: string): Promise<string[]> {
   const url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`;
-  try {
-    const { body, statusCode } = await request(url);
-    if (statusCode !== 200) return [];
-    const raw = await body.text();
-    return parseAutocompleteResponse(raw);
-  } catch (err) {
-    console.error(`Autocomplete fetch failed for "${query}":`, err);
-    return [];
+  const { body, statusCode } = await request(url);
+  const raw = await body.text();
+  if (statusCode === 429 || raw.startsWith('<html')) {
+    throw new RateLimitedError(query);
   }
+  if (statusCode !== 200) {
+    throw new Error(`Autocomplete HTTP ${statusCode} for "${query}": ${raw.slice(0, 120)}`);
+  }
+  return parseAutocompleteResponse(raw);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -62,11 +70,27 @@ function sleep(ms: number): Promise<void> {
 export async function expandSeed(seed: Seed): Promise<Candidate[]> {
   const variants = expandSeedLocally(seed.seed);
   const allSuggestions: string[] = [];
+  let consecutiveFailures = 0;
 
   for (const variant of variants) {
-    const suggestions = await fetchSuggestions(variant);
-    allSuggestions.push(...suggestions);
-    await sleep(RATE_LIMIT_MS);
+    try {
+      const suggestions = await fetchSuggestions(variant);
+      allSuggestions.push(...suggestions);
+      consecutiveFailures = 0;
+      await sleep(RATE_LIMIT_MS);
+    } catch (err) {
+      consecutiveFailures++;
+      if (err instanceof RateLimitedError) {
+        console.warn(`  rate-limited on "${variant}" (consecutive=${consecutiveFailures}); backing off ${BACKOFF_MS}ms`);
+        await sleep(BACKOFF_MS);
+      } else {
+        console.warn(`  fetch error on "${variant}": ${(err as Error).message}`);
+        await sleep(RATE_LIMIT_MS);
+      }
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        throw new Error(`Aborting: ${MAX_CONSECUTIVE_FAILURES} consecutive failures — IP likely blocked. Last: ${(err as Error).message}`);
+      }
+    }
   }
 
   const deduped = dedupeKeywords(allSuggestions);
@@ -96,11 +120,46 @@ function toCandidatesCsv(candidates: Candidate[]): string {
   return header + rows + '\n';
 }
 
+function readExistingCandidates(path: string): Candidate[] {
+  try {
+    const content = readFileSync(path, 'utf-8');
+    const lines = content.trim().split('\n').slice(1);
+    return lines.map(line => {
+      const match = line.match(/^"(.*)",([^,]+),(\d+),"(.*)"$/);
+      if (!match) throw new Error(`Bad candidate row: ${line}`);
+      return {
+        keyword: match[1].replace(/""/g, '"'),
+        language: match[2],
+        dimension: parseInt(match[3], 10),
+        sources: match[4].split('|').filter(Boolean),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function main() {
-  const { values } = parseArgs({ options: { language: { type: 'string', default: 'somali' } } });
+  const { values } = parseArgs({
+    options: {
+      language: { type: 'string', default: 'somali' },
+      dimensions: { type: 'string', default: '' },
+      append: { type: 'boolean', default: false },
+    },
+  });
   const languageSlug = values.language!;
+  const dimFilter = (values.dimensions ?? '')
+    .split(',')
+    .map(s => parseInt(s.trim(), 10))
+    .filter(n => !Number.isNaN(n));
+  const append = Boolean(values.append);
+
   const seedsPath = resolve(paths.data, `seeds-${languageSlug}.csv`);
-  const seeds = readSeedsCsv(seedsPath);
+  let seeds = readSeedsCsv(seedsPath);
+  if (dimFilter.length > 0) {
+    seeds = seeds.filter(s => dimFilter.includes(s.dimension));
+    console.log(`Filtered to dimensions [${dimFilter.join(', ')}]: ${seeds.length} seeds`);
+  }
   console.log(`Expanding ${seeds.length} seeds via Google autocomplete...`);
 
   const allCandidates: Candidate[] = [];
@@ -113,18 +172,28 @@ async function main() {
     console.log(`  ${Math.min(i + BATCH_SIZE, seeds.length)} / ${seeds.length} seeds processed`);
   }
 
-  // Dedup across all candidates, keeping first (language, dimension)
+  mkdirSync(paths.data, { recursive: true });
+  const outPath = resolve(paths.data, `candidates-${languageSlug}.csv`);
+
+  const existing = append ? readExistingCandidates(outPath) : [];
+  const merged = [...existing, ...allCandidates];
+
+  // Dedup on (keyword, language, dimension), union sources
   const seen = new Map<string, Candidate>();
-  for (const c of allCandidates) {
+  for (const c of merged) {
     const key = `${c.keyword}|${c.language}|${c.dimension}`;
-    if (!seen.has(key)) seen.set(key, c);
+    const prev = seen.get(key);
+    if (prev) {
+      const sources = Array.from(new Set([...prev.sources, ...c.sources])).sort();
+      seen.set(key, { ...prev, sources });
+    } else {
+      seen.set(key, { ...c, sources: [...c.sources] });
+    }
   }
   const final = Array.from(seen.values());
 
-  mkdirSync(paths.data, { recursive: true });
-  const outPath = resolve(paths.data, `candidates-${languageSlug}.csv`);
   writeFileSync(outPath, toCandidatesCsv(final));
-  console.log(`Wrote ${final.length} candidates to ${outPath}`);
+  console.log(`Wrote ${final.length} candidates to ${outPath} (${existing.length} pre-existing, ${allCandidates.length} new before dedup)`);
 }
 
 if (isMainModule(import.meta.url)) {
