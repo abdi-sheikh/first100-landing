@@ -60,15 +60,30 @@ async function generateSeedsForDimension(
   if (!raw) {
     throw new Error(`Empty LLM response for dimension ${dimension.id} (${dimension.name})`);
   }
-  // Model may wrap array in an object key; handle both
   try {
     const parsed = JSON.parse(raw);
-    const arr = Array.isArray(parsed) ? parsed : (parsed.seeds ?? parsed.queries ?? parsed.keywords ?? []);
+    const arr = findStringArray(parsed);
+    if (arr.length === 0) {
+      console.warn(`No seed array found in response for dim ${dimension.id}: ${raw.slice(0, 200)}`);
+    }
     return extractSeeds(arr);
   } catch (err) {
     console.error(`Failed to parse seeds for dimension ${dimension.id}: ${raw}`);
     throw err;
   }
+}
+
+// Walk a parsed JSON value and return the first string[] we find.
+// Handles direct arrays, {seeds: [...]}, {queries: [...]}, or any key wrapping an array of strings.
+function findStringArray(value: unknown): string[] {
+  if (Array.isArray(value) && value.every(v => typeof v === 'string')) return value as string[];
+  if (value && typeof value === 'object') {
+    for (const v of Object.values(value)) {
+      const found = findStringArray(v);
+      if (found.length > 0) return found;
+    }
+  }
+  return [];
 }
 
 function extractSeeds(value: unknown): string[] {
