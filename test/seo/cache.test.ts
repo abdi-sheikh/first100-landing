@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import { openCache, closeCache, getCached, putCached, type Cache } from '../../scripts/seo/validate/cache.js';
+import { openCache, closeCache, getCached, putCached, listByLanguage, type Cache } from '../../scripts/seo/validate/cache.js';
 import type { ValidatedKeyword } from '../../scripts/seo/lib/types.js';
 
 let tmp: string;
@@ -59,4 +59,14 @@ test('getCached distinguishes by country and dataSource', () => {
   assert.equal(getCached(cache, sample.keyword, 'gb', 'gkp'), null);
   assert.equal(getCached(cache, sample.keyword, 'us', 'cli'), null);
   assert.ok(getCached(cache, sample.keyword, 'us', 'gkp'));
+});
+
+test('listByLanguage excludes stale entries (TTL)', () => {
+  const stale = { ...sample, keyword: 'stale entry', validatedAt: '2020-01-01T00:00:00Z' };
+  const fresh = { ...sample, keyword: 'fresh entry' };
+  putCached(cache, stale);
+  putCached(cache, fresh);
+  const results = listByLanguage(cache, 'somali');
+  assert.equal(results.length, 1);
+  assert.equal(results[0].keyword, 'fresh entry');
 });

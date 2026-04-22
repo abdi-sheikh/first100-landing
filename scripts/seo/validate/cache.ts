@@ -87,9 +87,10 @@ export function putCached(cache: Cache, kw: ValidatedKeyword): void {
 }
 
 export function listByLanguage(cache: Cache, language: string): ValidatedKeyword[] {
+  const cutoff = new Date(Date.now() - TTL_MS).toISOString();
   const rows = cache
-    .prepare(`SELECT * FROM keywords WHERE language = ?`)
-    .all(language) as Record<string, unknown>[];
+    .prepare(`SELECT * FROM keywords WHERE language = ? AND validated_at > ?`)
+    .all(language, cutoff) as Record<string, unknown>[];
   return rows.map(row => ({
     keyword: String(row.keyword),
     language: String(row.language),
