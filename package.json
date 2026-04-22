@@ -27,7 +27,8 @@
     "seo:cluster": "tsx scripts/seo/score/cluster.ts",
     "seo:matrix": "tsx scripts/seo/export/matrix.ts",
     "seo:run": "tsx scripts/seo/cli.ts",
-    "seo:test": "node --test --import tsx \"test/seo/**/*.test.ts\""
+    "seo:test": "node --test --import tsx \"test/seo/**/*.test.ts\"",
+    "seo:backup": "bash scripts/seo/backup.sh"
   },
   "dependencies": {
     "astro": "^5.2.0"
