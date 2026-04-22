@@ -16,12 +16,14 @@ test('parseAutocompleteResponse returns empty array on malformed input', () => {
   assert.deepEqual(parseAutocompleteResponse('[]'), []);
 });
 
-test('expandSeedLocally generates seed plus letter suffixes', () => {
+test('expandSeedLocally generates seed plus productive letter suffixes', () => {
   const variants = expandSeedLocally('learn somali');
-  assert.equal(variants.length, 27); // seed + a-z
+  // seed + 20 productive letters (j, q, v, x, y, z dropped as rarely productive)
+  assert.equal(variants.length, 21);
   assert.equal(variants[0], 'learn somali');
   assert.equal(variants[1], 'learn somali a');
-  assert.equal(variants[26], 'learn somali z');
+  assert.ok(variants.includes('learn somali w'));
+  assert.ok(!variants.some(v => v.endsWith(' z')));
 });
 
 test('dedupeKeywords lowercases, trims, and removes exact dupes', () => {

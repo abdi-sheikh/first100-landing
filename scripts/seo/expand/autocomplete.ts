@@ -5,8 +5,9 @@ import { parseArgs } from 'node:util';
 import { paths, isMainModule } from '../lib/config.js';
 import type { Seed, Candidate } from '../lib/types.js';
 
-const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const RATE_LIMIT_MS = 200; // ~5 req/sec, more headroom against rate limiting
+// Drop j, q, v, x, y, z — rarely productive as query-start letters in English parent queries.
+const LETTERS = 'abcdefghiklmnoprstuw'.split('');
+const RATE_LIMIT_MS = 150; // ~6.5 req/sec; fail-loud backoff handles rate limits.
 const BATCH_SIZE = 20;
 const BACKOFF_MS = 30_000; // 30 seconds after a rate limit hit
 const MAX_CONSECUTIVE_FAILURES = 3; // abort if Google keeps refusing
