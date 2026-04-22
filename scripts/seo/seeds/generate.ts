@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import { parseArgs } from 'node:util';
@@ -12,8 +12,9 @@ const SEEDS_PER_DIMENSION = 40;
 
 export function buildSeedPrompt(dimension: Dimension, language: Language | null): string {
   const languageBlock = language
-    ? `Target language: ${language.name} (${language.nativeName}).`
-    : 'Target: language-agnostic (applies to all toddler language apps equally).';
+    ? `Target language: ${language.name} (${language.nativeName}).
+IMPORTANT: The seeds themselves MUST be written in English. They are queries English-speaking parents in the US/UK/Canada/Australia would type when searching about the ${language.name} language for their toddlers. Do NOT write seeds in ${language.name} itself.`
+    : 'Target: language-agnostic (applies to all toddler language apps equally). Seeds must be in English.';
 
   return `Generate ${SEEDS_PER_DIMENSION} search-query seeds for SEO research.
 
@@ -24,6 +25,7 @@ ${languageBlock}
 
 Rules:
 - Each seed is a realistic Google search query a parent would type.
+- All seeds must be in English.
 - Lowercase, 3-8 words each.
 - No duplicates.
 - Return ONLY a JSON array of strings. No prose.
@@ -100,7 +102,10 @@ function extractSeeds(value: unknown): string[] {
   return out;
 }
 
-export async function generateAllSeeds(languageSlug: string): Promise<Seed[]> {
+export async function generateAllSeeds(
+  languageSlug: string,
+  dimensionFilter: number[] = [],
+): Promise<Seed[]> {
   const openai = new OpenAI({ apiKey: env.openaiKey });
   const language = getLanguage(languageSlug);
   const seeds: Seed[] = [];
@@ -108,6 +113,7 @@ export async function generateAllSeeds(languageSlug: string): Promise<Seed[]> {
   for (const dimension of DIMENSIONS) {
     // Skip dimension 5 — no validation for long-tail programmatic
     if (dimension.sharing === 'skip-validation') continue;
+    if (dimensionFilter.length > 0 && !dimensionFilter.includes(dimension.id)) continue;
 
     const useLanguage = dimension.sharing === 'shared' ? null : language;
     const scope = useLanguage ? language.slug : 'agnostic';
@@ -121,17 +127,55 @@ export async function generateAllSeeds(languageSlug: string): Promise<Seed[]> {
   return seeds;
 }
 
+function readSeedsCsv(path: string): Seed[] {
+  try {
+    const content = readFileSync(path, 'utf-8');
+    const lines = content.trim().split('\n').slice(1);
+    return lines.map(line => {
+      const match = line.match(/^([^,]+),(\d+),"(.*)"$/);
+      if (!match) throw new Error(`Bad seed row: ${line}`);
+      return { language: match[1], dimension: parseInt(match[2], 10), seed: match[3].replace(/""/g, '"') };
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function main() {
   const { values } = parseArgs({
-    options: { language: { type: 'string', default: 'somali' } },
+    options: {
+      language: { type: 'string', default: 'somali' },
+      dimensions: { type: 'string', default: '' },
+      merge: { type: 'boolean', default: false },
+    },
   });
   const languageSlug = values.language!;
+  const dimFilter = (values.dimensions ?? '')
+    .split(',')
+    .map(s => parseInt(s.trim(), 10))
+    .filter(n => !Number.isNaN(n));
+  const merge = Boolean(values.merge);
+
   console.log(`Generating seeds for language: ${languageSlug}`);
-  const seeds = await generateAllSeeds(languageSlug);
+  if (dimFilter.length > 0) console.log(`  Filter: dimensions ${dimFilter.join(', ')}`);
+  const newSeeds = await generateAllSeeds(languageSlug, dimFilter);
+
   mkdirSync(paths.data, { recursive: true });
   const outPath = resolve(paths.data, `seeds-${languageSlug}.csv`);
-  writeFileSync(outPath, seedsToCsv(seeds));
-  console.log(`Wrote ${seeds.length} seeds to ${outPath}`);
+
+  let finalSeeds = newSeeds;
+  if (merge) {
+    // Keep existing seeds for dimensions NOT in filter; replace seeds for filtered dimensions.
+    const existing = readSeedsCsv(outPath);
+    const kept = dimFilter.length > 0
+      ? existing.filter(s => !dimFilter.includes(s.dimension))
+      : [];
+    finalSeeds = [...kept, ...newSeeds];
+    console.log(`  Merged: kept ${kept.length} existing + ${newSeeds.length} new = ${finalSeeds.length} total`);
+  }
+
+  writeFileSync(outPath, seedsToCsv(finalSeeds));
+  console.log(`Wrote ${finalSeeds.length} seeds to ${outPath}`);
 }
 
 if (isMainModule(import.meta.url)) {
