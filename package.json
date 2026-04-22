@@ -19,13 +19,27 @@
     "generate-showcase": "node scripts/generate-showcase-variants.js",
     "generate-showcase:dry-run": "node scripts/generate-showcase-variants.js --dry-run",
     "generate-marketing-localizations": "node scripts/generate-marketing-localizations.js",
-    "generate-marketing-localizations:dry-run": "node scripts/generate-marketing-localizations.js --dry-run"
+    "generate-marketing-localizations:dry-run": "node scripts/generate-marketing-localizations.js --dry-run",
+    "seo:seeds": "tsx scripts/seo/seeds/generate.ts",
+    "seo:expand": "tsx scripts/seo/expand/autocomplete.ts",
+    "seo:validate": "tsx scripts/seo/validate/ke.ts",
+    "seo:score": "tsx scripts/seo/score/prioritize.ts",
+    "seo:cluster": "tsx scripts/seo/score/cluster.ts",
+    "seo:matrix": "tsx scripts/seo/export/matrix.ts",
+    "seo:run": "tsx scripts/seo/cli.ts",
+    "seo:test": "node --test --import tsx test/seo/"
   },
   "dependencies": {
     "astro": "^5.2.0"
   },
   "devDependencies": {
-    "dotenv": "^17.2.3",
-    "openai": "^4.77.0"
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.9.0",
+    "csv-stringify": "^6.7.0",
+    "dotenv": "^17.4.2",
+    "openai": "^4.104.0",
+    "tsx": "^4.21.0",
+    "undici": "^8.1.0",
+    "zod": "^3.25.76"
   }
 }
