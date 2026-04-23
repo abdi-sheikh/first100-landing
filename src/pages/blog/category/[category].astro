@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import BlogPostCard from '../../../components/BlogPostCard.astro';
+import {
+  listPostsByCategory,
+  getAllCategoriesInUse,
+} from '../../../lib/blog/posts';
+import type { BlogCategory } from '../../../lib/blog/types';
+
+export async function getStaticPaths() {
+  const cats = await getAllCategoriesInUse('first100');
+  return cats.map((category) => ({ params: { category } }));
+}
+
+const { category } = Astro.params;
+if (!category) throw new Error('Missing category');
+
+const posts = await listPostsByCategory(category as BlogCategory, 'first100');
+const labelled = category.replace('-', ' ');
+---
+
+<BaseLayout
+  title={`${labelled} | First 100 Blog`}
+  description={`First 100 blog posts in the ${labelled} category.`}
+>
+  <Header slot="header" />
+
+  <main id="main-content" class="blog-category">
+    <header class="blog-category__header">
+      <p class="blog-category__eyebrow">Category</p>
+      <h1>{labelled}</h1>
+    </header>
+
+    {posts.length === 0 ? (
+      <p class="blog-category__empty">No posts in this category yet.</p>
+    ) : (
+      <div class="blog-category__grid">
+        {posts.map((post) => <BlogPostCard post={post} />)}
+      </div>
+    )}
+  </main>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+.blog-category {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+}
+.blog-category__header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+.blog-category__eyebrow {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  margin: 0 0 0.5rem;
+}
+.blog-category__header h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  margin: 0;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+.blog-category__grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.blog-category__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 3rem 0;
+}
+</style>
