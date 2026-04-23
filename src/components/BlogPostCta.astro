@@ -1,0 +1,59 @@
+---
+import languagesData from '../data/languages.json';
+import { withBase } from '../utils/withBase';
+
+interface Props { language?: string | null; }
+const { language } = Astro.props;
+
+const lang = language ? languagesData.languages.find((l) => l.slug === language) : null;
+const ctaHref = lang ? withBase(`/l/${lang.slug}`) : withBase('/languages');
+const ctaTitle = lang ? `Teach your toddler ${lang.name}` : 'Teach your toddler a new language';
+const ctaBody = lang
+  ? `First 100 ${lang.name} — tap a picture, hear the word, no ads. ${lang.status === 'available' ? 'Available now on iOS and Android.' : 'Coming soon.'}`
+  : 'First 100 is a series of toddler-friendly language apps. Pick a language and get started.';
+---
+
+<aside class="blog-cta">
+  <div class="blog-cta__inner">
+    <h3 class="blog-cta__title">{ctaTitle}</h3>
+    <p class="blog-cta__body">{ctaBody}</p>
+    <a class="blog-cta__link" href={ctaHref}>
+      {lang ? `Get First 100 ${lang.name} →` : 'Browse languages →'}
+    </a>
+  </div>
+</aside>
+
+<style>
+.blog-cta {
+  margin: 3rem 0 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(74, 124, 89, 0.08), rgba(74, 124, 89, 0.04));
+  border: 1px solid rgba(74, 124, 89, 0.18);
+  border-radius: 16px;
+}
+.blog-cta__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  color: var(--color-text);
+}
+.blog-cta__body {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+.blog-cta__link {
+  display: inline-block;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.blog-cta__link:hover {
+  transform: translateY(-1px);
+  background: #3b6b49;
+}
+</style>

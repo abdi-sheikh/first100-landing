@@ -1,0 +1,198 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BlogPostCta from '../components/BlogPostCta.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import { withBase } from '../utils/withBase';
+import type { BlogPost } from '../lib/blog/types';
+import { computeReadingTime, extractHeadings } from '../lib/blog/render';
+
+interface Props {
+  post: BlogPost;
+  renderedHtml: string;
+}
+
+const { post, renderedHtml } = Astro.props;
+
+const pubDateDisplay = post.pub_date
+  ? new Date(post.pub_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  : null;
+const updatedDisplay = post.updated_date && post.updated_date !== post.pub_date
+  ? new Date(post.updated_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  : null;
+
+const rt = computeReadingTime(post.body_md);
+const headings = extractHeadings(post.body_md);
+
+const canonicalUrl = new URL(`/blog/${post.slug}`, Astro.site ?? Astro.url).toString();
+const title = post.seo_title ?? post.title;
+
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': post.json_ld_type,
+  headline: post.title,
+  description: post.description,
+  author: { '@type': 'Organization', name: post.author },
+  publisher: { '@type': 'Organization', name: 'First 100' },
+  datePublished: post.pub_date ?? undefined,
+  dateModified: post.updated_date ?? post.pub_date ?? undefined,
+  image: post.hero_image_url ?? undefined,
+  mainEntityOfPage: canonicalUrl,
+  keywords: [post.primary_keyword, ...post.related_keywords].join(', '),
+};
+---
+
+<BaseLayout
+  title={title}
+  description={post.description}
+  canonicalUrl={canonicalUrl}
+  ogImage={post.hero_image_url ?? undefined}
+>
+  <Header slot="header" />
+
+  <main id="main-content" class="blog-post">
+    <article>
+      <header class="blog-post__header">
+        <p class="blog-post__category">{post.category.replace('-', ' ')}</p>
+        <h1 class="blog-post__title">{post.title}</h1>
+        <p class="blog-post__description">{post.description}</p>
+        <div class="blog-post__meta">
+          <span>{post.author}</span>
+          {pubDateDisplay && <span> · {pubDateDisplay}</span>}
+          <span> · {rt.text}</span>
+        </div>
+        {updatedDisplay && (
+          <p class="blog-post__updated">Last updated: {updatedDisplay}</p>
+        )}
+      </header>
+
+      {post.hero_image_url && (
+        <img
+          class="blog-post__hero"
+          src={post.hero_image_url}
+          alt={post.hero_image_alt ?? ''}
+          loading="eager"
+        />
+      )}
+
+      {headings.length >= 3 && <TableOfContents headings={headings} />}
+
+      <div class="blog-post__body" set:html={renderedHtml} />
+
+      <BlogPostCta language={post.cta_language} />
+    </article>
+  </main>
+
+  <Footer slot="footer" />
+
+  <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+</BaseLayout>
+
+<style>
+.blog-post {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.blog-post__category {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.blog-post__title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 1rem;
+  color: var(--color-text);
+}
+
+.blog-post__description {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.blog-post__meta {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.blog-post__updated {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.blog-post__hero {
+  width: 100%;
+  border-radius: 12px;
+  margin: 1.5rem 0 2rem;
+}
+
+.blog-post__body {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.blog-post__body :global(h2) {
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.7rem;
+}
+
+.blog-post__body :global(h3) {
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.blog-post__body :global(p) {
+  margin: 0 0 1.1rem;
+}
+
+.blog-post__body :global(a) {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.blog-post__body :global(ul), .blog-post__body :global(ol) {
+  margin: 0 0 1.1rem 1.5rem;
+}
+
+.blog-post__body :global(blockquote) {
+  border-left: 3px solid var(--color-accent);
+  padding: 0.4rem 1rem;
+  margin: 1.5rem 0;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.blog-post__body :global(code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+  font-size: 0.92em;
+}
+
+.blog-post__body :global(.heading-anchor) {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-left: 0.4rem;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.blog-post__body :global(h2:hover .heading-anchor),
+.blog-post__body :global(h3:hover .heading-anchor) {
+  opacity: 1;
+}
+</style>

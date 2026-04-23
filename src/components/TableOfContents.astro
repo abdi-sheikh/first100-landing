@@ -1,0 +1,56 @@
+---
+import type { Heading } from '../lib/blog/render';
+
+interface Props { headings: Heading[]; }
+const { headings } = Astro.props;
+---
+
+<nav class="toc" aria-label="Table of contents">
+  <p class="toc__label">Contents</p>
+  <ol class="toc__list">
+    {headings.map((h) => (
+      <li class={`toc__item toc__item--h${h.depth}`}>
+        <a class="toc__link" href={`#${h.slug}`}>{h.text}</a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+.toc {
+  margin: 2rem 0;
+  padding: 1rem 1.25rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 8px 8px 0;
+}
+.toc__label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+.toc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.95rem;
+}
+.toc__item {
+  padding: 0.15rem 0;
+}
+.toc__item--h3 {
+  padding-left: 1rem;
+  font-size: 0.9rem;
+}
+.toc__link {
+  color: var(--color-text);
+  text-decoration: none;
+}
+.toc__link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+</style>
