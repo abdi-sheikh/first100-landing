@@ -1,7 +1,9 @@
 import { parseArgs } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { paths, isMainModule } from './lib/config.js';
+import { LANGUAGE_ANCHORS } from './lib/language-anchors.js';
 
 export interface CliArgs {
   language: string;
@@ -45,6 +47,36 @@ function runStage(stage: string, script: string, language: string, dryRun: boole
   }
 }
 
+function emitFinalQualityReport(language: string): void {
+  if (!LANGUAGE_ANCHORS[language]) return;
+  const candidatesPath = resolve(paths.data, `candidates-${language}.csv`);
+  let total = 0;
+  let langSpecific = 0;
+  let agnostic = 0;
+  try {
+    const lines = readFileSync(candidatesPath, 'utf-8').trim().split('\n').slice(1);
+    for (const line of lines) {
+      const match = line.match(/^"(.*)",([^,]+),(\d+),"(.*)"$/);
+      if (!match) continue;
+      total++;
+      if (match[2] === language) langSpecific++;
+      else if (match[2] === 'agnostic') agnostic++;
+    }
+  } catch {
+    return;
+  }
+  const denom = langSpecific + agnostic;
+  const driftRatio = denom === 0 ? 0 : agnostic / denom;
+  console.log(`\n=== Pipeline quality report (${language}) ===`);
+  console.log(`  candidates total: ${total}`);
+  console.log(`  language-specific: ${langSpecific}`);
+  console.log(`  agnostic (post-reclassification): ${agnostic}`);
+  console.log(`  drift ratio: ${(driftRatio * 100).toFixed(1)}%`);
+  if (driftRatio > 0.5 && langSpecific > 0) {
+    console.warn(`  ⚠ drift ratio above 50% — per-language pool may be unreliable`);
+  }
+}
+
 async function main() {
   const args = parseCliArgs(process.argv.slice(2));
   console.log(`Running SEO pipeline for language: ${args.language}`);
@@ -57,6 +89,7 @@ async function main() {
     }
     runStage(stage.name, stage.script, args.language, args.dryRun);
   }
+  emitFinalQualityReport(args.language);
   console.log('\nPipeline complete.');
 }
 

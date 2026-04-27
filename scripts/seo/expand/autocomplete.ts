@@ -3,6 +3,7 @@ import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { paths, isMainModule } from '../lib/config.js';
+import { hasLanguageAnchor, LANGUAGE_ANCHORS } from '../lib/language-anchors.js';
 import type { Seed, Candidate } from '../lib/types.js';
 
 // Drop j, q, v, x, y, z — rarely productive as query-start letters in English parent queries.
@@ -95,12 +96,53 @@ export async function expandSeed(seed: Seed): Promise<Candidate[]> {
   }
 
   const deduped = dedupeKeywords(allSuggestions);
-  return deduped.map(keyword => ({
+  return deduped.map(keyword => reclassifyCandidate({
     keyword,
     language: seed.language,
     dimension: seed.dimension,
     sources: ['autocomplete'],
   }));
+}
+
+// If a per-language candidate doesn't actually contain a language-anchor token,
+// reclassify it to 'agnostic'. Drifted candidates are real keywords — they just
+// weren't actually about the language they were collected under. Reclassifying
+// (vs. dropping) lets them count once in the agnostic pool instead of being
+// mis-tagged 22 times across per-language runs.
+export function reclassifyCandidate(candidate: Candidate): Candidate {
+  if (candidate.language === 'agnostic') return candidate;
+  if (!LANGUAGE_ANCHORS[candidate.language]) return candidate;
+  if (hasLanguageAnchor(candidate.keyword, candidate.language)) return candidate;
+  return { ...candidate, language: 'agnostic' };
+}
+
+export interface ExpansionQualityReport {
+  language: string;
+  totalCandidates: number;
+  languageSpecific: number;
+  reclassifiedToAgnostic: number;
+  driftRatio: number;
+}
+
+export function buildQualityReport(
+  candidates: Candidate[],
+  languageSlug: string,
+): ExpansionQualityReport {
+  let languageSpecific = 0;
+  let reclassifiedToAgnostic = 0;
+  for (const c of candidates) {
+    if (c.language === languageSlug) languageSpecific++;
+    else if (c.language === 'agnostic') reclassifiedToAgnostic++;
+  }
+  const total = languageSpecific + reclassifiedToAgnostic;
+  const driftRatio = total === 0 ? 0 : reclassifiedToAgnostic / total;
+  return {
+    language: languageSlug,
+    totalCandidates: candidates.length,
+    languageSpecific,
+    reclassifiedToAgnostic,
+    driftRatio,
+  };
 }
 
 function readSeedsCsv(path: string): Seed[] {
@@ -195,6 +237,15 @@ async function main() {
 
   writeFileSync(outPath, toCandidatesCsv(final));
   console.log(`Wrote ${final.length} candidates to ${outPath} (${existing.length} pre-existing, ${allCandidates.length} new before dedup)`);
+
+  if (LANGUAGE_ANCHORS[languageSlug]) {
+    const report = buildQualityReport(final, languageSlug);
+    console.log(`\nQuality report for ${languageSlug}:`);
+    console.log(`  total candidates: ${report.totalCandidates}`);
+    console.log(`  language-specific: ${report.languageSpecific}`);
+    console.log(`  reclassified to agnostic (drift): ${report.reclassifiedToAgnostic}`);
+    console.log(`  drift ratio: ${(report.driftRatio * 100).toFixed(1)}%`);
+  }
 }
 
 if (isMainModule(import.meta.url)) {

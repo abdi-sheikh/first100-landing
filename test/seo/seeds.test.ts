@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSeedPrompt, parseSeedResponse, seedsToCsv } from '../../scripts/seo/seeds/generate.js';
+import {
+  buildSeedPrompt,
+  parseSeedResponse,
+  seedsToCsv,
+  filterAnchoredSeeds,
+} from '../../scripts/seo/seeds/generate.js';
 import type { Seed } from '../../scripts/seo/lib/types.js';
 import { getDimension } from '../../scripts/seo/lib/dimensions.js';
 import { getLanguage } from '../../scripts/seo/lib/languages.js';
@@ -43,4 +48,25 @@ test('seedsToCsv escapes embedded quotes', () => {
   const csv = seedsToCsv(seeds);
   assert.match(csv, /""best""/);
   assert.match(csv, /^language,dimension,seed\n/);
+});
+
+test('buildSeedPrompt for per-language dimension demands anchor token in seed', () => {
+  const prompt = buildSeedPrompt(getDimension(1), getLanguage('swahili'));
+  assert.match(prompt, /ANCHOR REQUIREMENT/);
+  assert.match(prompt, /"swahili"/);
+  assert.match(prompt, /"kiswahili"/);
+});
+
+test('filterAnchoredSeeds keeps anchored seeds and drops drift', () => {
+  const seeds = [
+    'learn swahili for kids',
+    'best toddler vocabulary apps',
+    'kiswahili songs for children',
+    'how to teach toddlers languages',
+  ];
+  const filtered = filterAnchoredSeeds(seeds, 'swahili');
+  assert.deepEqual(filtered, [
+    'learn swahili for kids',
+    'kiswahili songs for children',
+  ]);
 });

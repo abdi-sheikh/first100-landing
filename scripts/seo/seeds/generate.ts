@@ -5,23 +5,30 @@ import { z } from 'zod';
 import { parseArgs } from 'node:util';
 import { DIMENSIONS, getDimension, type Dimension } from '../lib/dimensions.js';
 import { LANGUAGES, getLanguage, type Language } from '../lib/languages.js';
+import { hasLanguageAnchor, getAnchorTokens } from '../lib/language-anchors.js';
 import { paths, env, isMainModule } from '../lib/config.js';
 import type { Seed } from '../lib/types.js';
 
 const SEEDS_PER_DIMENSION = 40;
 
 export function buildSeedPrompt(dimension: Dimension, language: Language | null): string {
-  const languageBlock = language
-    ? `Target language: ${language.name} (${language.nativeName}).
-IMPORTANT: The seeds themselves MUST be written in English. They are queries English-speaking parents in the US/UK/Canada/Australia would type when searching about the ${language.name} language for their toddlers. Do NOT write seeds in ${language.name} itself.`
-    : 'Target: language-agnostic (applies to all toddler language apps equally). Seeds must be in English.';
+  const anchorBlock = language
+    ? (() => {
+        const tokens = getAnchorTokens(language.slug);
+        const exampleAnchor = tokens[0];
+        return `Target language: ${language.name} (${language.nativeName}).
+IMPORTANT: The seeds themselves MUST be written in English. They are queries English-speaking parents in the US/UK/Canada/Australia would type when searching about the ${language.name} language for their toddlers. Do NOT write seeds in ${language.name} itself.
+
+ANCHOR REQUIREMENT: Every seed MUST contain one of these language-anchor tokens (case-insensitive, as a whole word): ${tokens.map(t => `"${t}"`).join(', ')}. A seed without an anchor token (e.g., "best toddler vocabulary apps" with no "${exampleAnchor}") will be rejected. Anchor the language explicitly in every query.`;
+      })()
+    : 'Target: language-agnostic (applies to all toddler language apps equally). Seeds must be in English. Do NOT include any specific language name (e.g., "spanish", "mandarin") — these are shared across all 22 languages.';
 
   return `Generate ${SEEDS_PER_DIMENSION} search-query seeds for SEO research.
 
 Dimension: ${dimension.name}
 Example of a seed in this dimension: "${dimension.example}"
 
-${languageBlock}
+${anchorBlock}
 
 Rules:
 - Each seed is a realistic Google search query a parent would type.
@@ -119,12 +126,22 @@ export async function generateAllSeeds(
     const scope = useLanguage ? language.slug : 'agnostic';
     console.log(`  [dim ${dimension.id}] ${dimension.name} (${scope})`);
     const raw = await generateSeedsForDimension(openai, dimension, useLanguage);
-    for (const seed of raw) {
+    const filtered = useLanguage
+      ? filterAnchoredSeeds(raw, useLanguage.slug)
+      : raw;
+    if (useLanguage && filtered.length < raw.length) {
+      console.log(`    dropped ${raw.length - filtered.length} non-anchored seeds`);
+    }
+    for (const seed of filtered) {
       seeds.push({ language: scope, dimension: dimension.id, seed });
     }
   }
 
   return seeds;
+}
+
+export function filterAnchoredSeeds(seeds: string[], languageSlug: string): string[] {
+  return seeds.filter(s => hasLanguageAnchor(s, languageSlug));
 }
 
 function readSeedsCsv(path: string): Seed[] {
