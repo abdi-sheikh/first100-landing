@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BlogPostCard from '../../components/BlogPostCard.astro';
+import NewsletterSignup from '../../components/NewsletterSignup.astro';
 import { listPublishedPosts } from '../../lib/blog/posts';
 
 const posts = await listPublishedPosts('first100');
@@ -27,6 +28,8 @@ const posts = await listPublishedPosts('first100');
         {posts.map((post) => <BlogPostCard post={post} />)}
       </div>
     )}
+
+    <NewsletterSignup source="blog-index" />
   </main>
 
   <Footer slot="footer" />

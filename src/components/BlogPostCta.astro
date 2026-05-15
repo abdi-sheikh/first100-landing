@@ -17,11 +17,32 @@ const ctaBody = lang
   <div class="blog-cta__inner">
     <h3 class="blog-cta__title">{ctaTitle}</h3>
     <p class="blog-cta__body">{ctaBody}</p>
-    <a class="blog-cta__link" href={ctaHref}>
+    <a
+      class="blog-cta__link"
+      href={ctaHref}
+      data-cta="blog-post"
+      data-cta-language={lang ? lang.slug : ''}
+    >
       {lang ? `Get First 100 ${lang.name} →` : 'Browse languages →'}
     </a>
   </div>
 </aside>
+
+<script>
+  // Funnel event: blog post -> app CTA click. Read in PostHog alongside
+  // pageview and (downstream) the app-store click on the language page.
+  document.querySelectorAll('a[data-cta="blog-post"]').forEach((el) => {
+    el.addEventListener('click', () => {
+      if (window.posthog) {
+        window.posthog.capture('cta_click', {
+          cta: 'blog-post',
+          language: el.getAttribute('data-cta-language') || null,
+          href: el.getAttribute('href'),
+        });
+      }
+    });
+  });
+</script>
 
 <style>
 .blog-cta {

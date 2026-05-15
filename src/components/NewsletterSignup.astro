@@ -1,0 +1,145 @@
+---
+/**
+ * Email capture. Inserts into Supabase `email_subscribers` (anon-insert RLS).
+ * The anon key is publishable; client-side insert is intentional.
+ */
+interface Props {
+  source?: string;
+  language?: string | null;
+}
+const { source = 'blog', language = null } = Astro.props;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+---
+
+<aside class="newsletter">
+  <div class="newsletter__inner">
+    <h3 class="newsletter__title">Get one good idea a week</h3>
+    <p class="newsletter__body">
+      Short, practical tips for raising a bilingual child — sent once a week.
+      No spam, unsubscribe anytime.
+    </p>
+    <form class="newsletter__form" id="newsletter-form" novalidate>
+      <input
+        type="email"
+        name="email"
+        required
+        placeholder="you@example.com"
+        class="newsletter__input"
+        aria-label="Email address"
+        autocomplete="email"
+      />
+      <button type="submit" class="newsletter__button">Sign up</button>
+    </form>
+    <p class="newsletter__status" id="newsletter-status" role="status" aria-live="polite"></p>
+  </div>
+</aside>
+
+<script define:vars={{ supabaseUrl, supabaseAnonKey, source, language }}>
+  const form = document.getElementById('newsletter-form');
+  const status = document.getElementById('newsletter-status');
+  if (form && supabaseUrl && supabaseAnonKey) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = form.querySelector('input[name="email"]');
+      const button = form.querySelector('button');
+      const email = (input.value || '').trim();
+      if (!email || !email.includes('@')) {
+        status.textContent = 'Please enter a valid email address.';
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Signing you up…';
+      try {
+        const res = await fetch(`${supabaseUrl}/rest/v1/email_subscribers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ email, source, language }),
+        });
+        // 409 = email already on the list; treat as success.
+        if (res.ok || res.status === 409) {
+          status.textContent = "You're in — thank you!";
+          form.reset();
+          if (window.posthog) {
+            window.posthog.capture('newsletter_signup', { source, language });
+          }
+        } else {
+          status.textContent = 'Something went wrong. Please try again.';
+          button.disabled = false;
+        }
+      } catch (err) {
+        status.textContent = 'Something went wrong. Please try again.';
+        button.disabled = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .newsletter {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(74, 124, 89, 0.08), rgba(74, 124, 89, 0.04));
+    border: 1px solid rgba(74, 124, 89, 0.18);
+    border-radius: 16px;
+  }
+  .newsletter__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+    color: var(--color-text);
+  }
+  .newsletter__body {
+    margin: 0 0 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+  }
+  .newsletter__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .newsletter__input {
+    flex: 1 1 220px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid rgba(74, 124, 89, 0.35);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-text);
+  }
+  .newsletter__input:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+  .newsletter__button {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease;
+  }
+  .newsletter__button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: #3b6b49;
+  }
+  .newsletter__button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .newsletter__status {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    min-height: 1.2em;
+  }
+</style>

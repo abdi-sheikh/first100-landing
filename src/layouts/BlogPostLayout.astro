@@ -3,6 +3,7 @@ import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BlogPostCta from '../components/BlogPostCta.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import { withBase } from '../utils/withBase';
 import type { BlogPost } from '../lib/blog/types';
@@ -81,6 +82,8 @@ const articleJsonLd = {
       <div class="blog-post__body" set:html={renderedHtml} />
 
       <BlogPostCta language={post.cta_language} />
+
+      <NewsletterSignup source={`blog-post:${post.slug}`} language={post.cta_language} />
     </article>
   </main>
 
