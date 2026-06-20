@@ -1,0 +1,101 @@
+---
+import { withBase } from '../utils/withBase';
+import type { BlogPostListItem } from '../lib/blog/types';
+
+interface Props {
+  posts: BlogPostListItem[];
+  fromSlug?: string | null;
+}
+
+const { posts, fromSlug = null } = Astro.props;
+---
+
+{posts.length > 0 && (
+  <aside class="related-posts" aria-label="Related articles">
+    <h2 class="related-posts__title">Keep reading</h2>
+    <ul class="related-posts__list">
+      {posts.map((post) => (
+        <li class="related-posts__item">
+          <a
+            class="related-posts__link"
+            href={withBase(`/blog/${post.slug}`)}
+            data-related-from={fromSlug ?? ''}
+            data-related-to={post.slug}
+          >
+            <span class="related-posts__category">{post.category.replace('-', ' ')}</span>
+            <span class="related-posts__heading">{post.title}</span>
+            <span class="related-posts__desc">{post.description}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}
+
+<script>
+  // Funnel event: related-post navigation within the blog cluster.
+  document.querySelectorAll('a[data-related-to]').forEach((el) => {
+    el.addEventListener('click', () => {
+      if (window.posthog && typeof window.posthog.capture === 'function') {
+        window.posthog.capture('related_post_clicked', {
+          from_slug: el.getAttribute('data-related-from') || null,
+          to_slug: el.getAttribute('data-related-to') || null,
+        });
+      }
+    });
+  });
+</script>
+
+<style>
+.related-posts {
+  margin: 3rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.related-posts__title {
+  margin: 0 0 1.25rem;
+  font-size: 1.5rem;
+  color: var(--color-text);
+}
+.related-posts__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.related-posts__item {
+  margin: 0;
+}
+.related-posts__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.related-posts__link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+.related-posts__category {
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+.related-posts__heading {
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--color-text);
+}
+.related-posts__desc {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+</style>

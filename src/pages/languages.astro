@@ -241,4 +241,9 @@ const requestPath = withBase('/request-language');
       searchInput.focus();
     });
   }
+
+  // Funnel: languages index pageview. Guards for PostHog presence.
+  if (window.posthog && typeof window.posthog.capture === 'function') {
+    window.posthog.capture('languages_index_viewed', {});
+  }
 </script>

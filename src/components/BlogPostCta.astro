@@ -2,8 +2,8 @@
 import languagesData from '../data/languages.json';
 import { withBase } from '../utils/withBase';
 
-interface Props { language?: string | null; }
-const { language } = Astro.props;
+interface Props { language?: string | null; fromPost?: string | null; }
+const { language, fromPost = null } = Astro.props;
 
 const lang = language ? languagesData.languages.find((l) => l.slug === language) : null;
 const ctaHref = lang ? withBase(`/l/${lang.slug}`) : withBase('/languages');
@@ -21,7 +21,8 @@ const ctaBody = lang
       class="blog-cta__link"
       href={ctaHref}
       data-cta="blog-post"
-      data-cta-language={lang ? lang.slug : ''}
+      data-cta-from-post={fromPost ?? ''}
+      data-cta-to={lang ? lang.slug : 'all'}
     >
       {lang ? `Get First 100 ${lang.name} →` : 'Browse languages →'}
     </a>
@@ -30,13 +31,13 @@ const ctaBody = lang
 
 <script>
   // Funnel event: blog post -> app CTA click. Read in PostHog alongside
-  // pageview and (downstream) the app-store click on the language page.
+  // blog_post_viewed and (downstream) the language-page store click.
   document.querySelectorAll('a[data-cta="blog-post"]').forEach((el) => {
     el.addEventListener('click', () => {
-      if (window.posthog) {
-        window.posthog.capture('cta_click', {
-          cta: 'blog-post',
-          language: el.getAttribute('data-cta-language') || null,
+      if (window.posthog && typeof window.posthog.capture === 'function') {
+        window.posthog.capture('cta_app_clicked', {
+          from_post: el.getAttribute('data-cta-from-post') || null,
+          to: el.getAttribute('data-cta-to') || 'all',
           href: el.getAttribute('href'),
         });
       }

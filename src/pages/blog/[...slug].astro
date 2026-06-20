@@ -1,6 +1,6 @@
 ---
 import BlogPostLayout from '../../layouts/BlogPostLayout.astro';
-import { listPublishedPosts, getPostBySlug } from '../../lib/blog/posts';
+import { listPublishedPosts, getPostBySlug, getRelatedPosts } from '../../lib/blog/posts';
 import { renderMarkdown } from '../../lib/blog/render';
 
 export async function getStaticPaths() {
@@ -15,6 +15,7 @@ const post = await getPostBySlug(slug);
 if (!post) throw new Error(`Post not found: ${slug}`);
 
 const renderedHtml = await renderMarkdown(post.body_md);
+const relatedPosts = await getRelatedPosts(post, 'first100', 5);
 ---
 
-<BlogPostLayout post={post} renderedHtml={renderedHtml} />
+<BlogPostLayout post={post} renderedHtml={renderedHtml} relatedPosts={relatedPosts} />
