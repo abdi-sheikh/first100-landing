@@ -3,18 +3,20 @@ import BaseLayout from './BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import BlogPostCta from '../components/BlogPostCta.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
 import NewsletterSignup from '../components/NewsletterSignup.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import { withBase } from '../utils/withBase';
-import type { BlogPost } from '../lib/blog/types';
+import type { BlogPost, BlogPostListItem } from '../lib/blog/types';
 import { computeReadingTime, extractHeadings } from '../lib/blog/render';
 
 interface Props {
   post: BlogPost;
   renderedHtml: string;
+  relatedPosts?: BlogPostListItem[];
 }
 
-const { post, renderedHtml } = Astro.props;
+const { post, renderedHtml, relatedPosts = [] } = Astro.props;
 
 const pubDateDisplay = post.pub_date
   ? new Date(post.pub_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -81,7 +83,9 @@ const articleJsonLd = {
 
       <div class="blog-post__body" set:html={renderedHtml} />
 
-      <BlogPostCta language={post.cta_language} />
+      <BlogPostCta language={post.cta_language} fromPost={post.slug} />
+
+      <RelatedPosts posts={relatedPosts} fromSlug={post.slug} />
 
       <NewsletterSignup source={`blog-post:${post.slug}`} language={post.cta_language} />
     </article>
@@ -90,6 +94,63 @@ const articleJsonLd = {
   <Footer slot="footer" />
 
   <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+
+  <script
+    define:vars={{
+      phSlug: post.slug,
+      phLanguage: post.cta_language ?? null,
+      phCategory: post.category,
+      phResearchDimension: post.research_dimension ?? null,
+    }}
+  >
+    // Funnel: blog post view + scroll depth. Guards for PostHog presence so it
+    // no-ops if analytics is blocked / consent not granted.
+    (function () {
+      function track(event, props) {
+        if (!window.posthog || typeof window.posthog.capture !== 'function') return;
+        try {
+          window.posthog.capture(event, props);
+        } catch (e) {
+          /* never let analytics break the page */
+        }
+      }
+
+      const viewProps = { slug: phSlug, language: phLanguage, category: phCategory };
+      if (phResearchDimension !== null && phResearchDimension !== undefined) {
+        viewProps.research_dimension = phResearchDimension;
+      }
+      track('blog_post_viewed', viewProps);
+
+      // Scroll depth: fire once at each of 25/50/75/100%.
+      const milestones = [25, 50, 75, 100];
+      const fired = new Set();
+      let ticking = false;
+
+      function check() {
+        ticking = false;
+        const doc = document.documentElement;
+        const scrollable = doc.scrollHeight - window.innerHeight;
+        const percent = scrollable <= 0
+          ? 100
+          : Math.min(100, Math.round(((window.scrollY || doc.scrollTop) / scrollable) * 100));
+        for (const m of milestones) {
+          if (percent >= m && !fired.has(m)) {
+            fired.add(m);
+            track('scroll_depth', { slug: phSlug, percent: m });
+          }
+        }
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(check);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      check();
+    })();
+  </script>
 </BaseLayout>
 
 <style>

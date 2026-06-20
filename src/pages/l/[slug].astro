@@ -6,6 +6,7 @@ import StoreButtons from '../../components/StoreButtons.astro';
 import WordDemo from '../../components/WordDemo.astro';
 import { withBase } from '../../utils/withBase';
 import languageData from '../../data/languages.json';
+import { listPostsByLanguage } from '../../lib/blog/posts';
 
 export function getStaticPaths() {
   return languageData.languages.map(lang => ({
@@ -19,6 +20,9 @@ interface Props {
 }
 
 const { language } = Astro.props;
+
+// Blog posts written for this language, for the "Resources" cluster link-back.
+const languagePosts = await listPostsByLanguage(language.slug, 'first100');
 const { name, nativeName, status, appStore, playStore, wordCount } = language;
 
 // FAQ items (shared across all languages)
@@ -148,6 +152,22 @@ const languagesPath = withBase('/languages');
         </div>
       </section>
       
+      <!-- Resources: blog posts for this language -->
+      {languagePosts.length > 0 && (
+        <section class="resources">
+          <h2 class="resources__title">{name} resources &amp; guides</h2>
+          <div class="resources__grid">
+            {languagePosts.map((post) => (
+              <a href={withBase(`/blog/${post.slug}`)} class="resources__item">
+                <span class="resources__category">{post.category.replace('-', ' ')}</span>
+                <span class="resources__heading">{post.title}</span>
+                <span class="resources__desc">{post.description}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <!-- Related Languages -->
       <section class="related">
         <h2 class="related__title">Explore More Languages</h2>
@@ -167,6 +187,32 @@ const languagesPath = withBase('/languages');
   </article>
   
   <Footer slot="footer" />
+
+  <script define:vars={{ phLanguage: language.slug }}>
+    // Funnel: language page view + app-store CTA clicks. Guards for PostHog.
+    (function () {
+      function track(event, props) {
+        if (!window.posthog || typeof window.posthog.capture !== 'function') return;
+        try {
+          window.posthog.capture(event, props);
+        } catch (e) {
+          /* never let analytics break the page */
+        }
+      }
+
+      track('language_page_viewed', { language: phLanguage });
+
+      // App-store buttons live in the hero. Derive store from the button class.
+      document.querySelectorAll('.store-button').forEach((el) => {
+        el.addEventListener('click', () => {
+          let store = null;
+          if (el.classList.contains('store-button--ios')) store = 'appstore';
+          else if (el.classList.contains('store-button--android')) store = 'playstore';
+          track('language_page_cta_clicked', { language: phLanguage, store: store });
+        });
+      });
+    })();
+  </script>
 </BaseLayout>
 
 <style>
@@ -354,6 +400,60 @@ const languagesPath = withBase('/languages');
     margin: 0;
   }
   
+  /* Resources */
+  .resources {
+    margin-bottom: var(--space-16);
+  }
+
+  .resources__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: var(--space-6);
+  }
+
+  .resources__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .resources__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .resources__item:hover {
+    border-color: var(--color-accent-soft);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .resources__category {
+    text-transform: uppercase;
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+  }
+
+  .resources__heading {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    line-height: var(--line-height-tight);
+  }
+
+  .resources__desc {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-relaxed);
+  }
+
   /* Related */
   .related__title {
     font-size: var(--font-size-xl);
