@@ -5,7 +5,7 @@ import type { APIContext } from 'astro';
 export async function GET(context: APIContext) {
   const posts = await listPublishedPosts('first100');
   return rss({
-    title: 'First 100 — Blog',
+    title: 'First100 — Blog',
     description: 'Language development, parenting, and the science of how kids learn words.',
     site: context.site ?? 'https://www.first100.org',
     items: posts.map((post) => ({

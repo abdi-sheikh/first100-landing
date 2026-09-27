@@ -1,5 +1,5 @@
 /**
- * Minimal tests for First 100 landing site data and scripts.
+ * Minimal tests for First100 landing site data and scripts.
  *
  * Run with: npm test
  * Uses Node.js built-in test runner (no extra dependencies).
@@ -16,12 +16,15 @@ const ROOT = join(__dirname, "..");
 
 const REQUIRED_LANGUAGE_KEYS = [
   "slug",
+  "code",
   "name",
-  "status",
+  "nativeName",
+  "app",
   "wordCount",
   "featured",
 ];
-const VALID_STATUSES = ["available", "coming-soon"];
+// A language's status and store link come from its app (src/data/apps.ts), not from here.
+const VALID_APPS = ["world", "somali", "standalone"];
 
 describe("languages.json", () => {
   let data;
@@ -39,7 +42,7 @@ describe("languages.json", () => {
     );
   });
 
-  it("each language has required keys and valid status", () => {
+  it("each language has required keys and a known app", () => {
     const slugs = new Set();
     for (const lang of data.languages) {
       for (const key of REQUIRED_LANGUAGE_KEYS) {
@@ -49,8 +52,8 @@ describe("languages.json", () => {
         );
       }
       assert.ok(
-        VALID_STATUSES.includes(lang.status),
-        `language "${lang.slug}" has invalid status: ${lang.status}`
+        VALID_APPS.includes(lang.app),
+        `language "${lang.slug}" has unknown app: ${lang.app}`
       );
       assert.ok(
         !slugs.has(lang.slug),
@@ -60,15 +63,9 @@ describe("languages.json", () => {
     }
   });
 
-  it("available languages have store URLs", () => {
-    for (const lang of data.languages) {
-      if (lang.status === "available") {
-        assert.ok(
-          lang.appStore || lang.playStore,
-          `available language "${lang.slug}" should have at least one store URL`
-        );
-      }
-    }
+  it("World has its 17 languages", () => {
+    const world = data.languages.filter((l) => l.app === "world").map((l) => l.code).sort();
+    assert.deepStrictEqual(world, ["de", "en", "es", "fr", "hi", "id", "it", "ja", "ko", "ms", "pt", "ru", "th", "tr", "ur", "vi", "zh"]);
   });
 
   it("slugs are URL-safe (lowercase, no spaces)", () => {

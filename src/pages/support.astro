@@ -2,150 +2,79 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Faq from '../components/Faq.astro';
 import { withBase } from '../utils/withBase';
+import { FAQ } from '../data/faq';
 
-const faqItems = [
+const contactEmail = 'hello@first100.app';
+
+const help = [
   {
-    question: 'What age range is First 100 for?',
-    answer: 'First 100 is built for toddlers ages 1-4. The interaction model is visual, audio-first, and low-friction for early learners.'
+    question: 'How do I get my purchase back on a new phone or iPad?',
+    answer: 'Open the menu, tap "More for grown-ups", answer the quick sum, then tap Restore purchases. Use the same Apple Account you bought with.',
   },
   {
-    question: 'Does the app work offline?',
-    answer: 'Yes. Once downloaded, learning content and audio are available without internet access.'
+    question: 'How do I change the language?',
+    answer: 'Open the menu and tap the pencil next to the language name at the top.',
   },
   {
-    question: 'Do you show ads or use subscriptions?',
-    answer: 'No ads and no subscriptions. Parent apps are one-time purchases, with optional add-on packs.'
+    question: 'How do I change the family in the pictures?',
+    answer: 'Open the menu, tap "More for grown-ups", answer the quick sum, then tap Family pictures.',
   },
   {
-    question: 'How do I request a new language?',
-    answer: 'Use the Request a Language page and share your target language plus region details. We use demand signals to prioritize releases.'
+    question: 'The words are silent.',
+    answer: 'Check the volume buttons on the side of the device. First100 plays even when the ring/silent switch is on silent.',
   },
   {
-    question: 'Do you offer school licensing?',
-    answer: 'Yes. For schools and organizations, we provide enterprise-style partnerships and custom rollout planning.'
+    question: 'Can I ask for a language?',
+    answer: 'Yes. Tell us on the Request a Language page; we use requests to decide what comes next.',
   },
-  {
-    question: 'How is pronunciation handled?',
-    answer: 'Word audio is recorded by native speakers to keep pronunciation natural and culturally familiar.'
-  }
 ];
-
-const requestPath = withBase('/request-language');
-const educatorsPath = withBase('/for-educators');
 ---
 
-<BaseLayout title="Support" description="Support resources and frequently asked questions for First 100.">
+<BaseLayout title="Support" description="Help with First100: restoring purchases, changing the language or the family pictures, and answers to common questions.">
   <Header slot="header" currentPath="/support" />
 
-  <article class="support-page">
-    <div class="container container--narrow">
-      <header class="support-page__hero">
-        <p class="support-page__eyebrow">Support</p>
-        <h1>Frequently asked questions</h1>
-        <p>Answers for families, schools, and partners using First 100 apps.</p>
-      </header>
-
-      <section class="support-page__faq" aria-label="Frequently asked questions">
-        {faqItems.map((item) => (
-          <details class="support-page__item">
-            <summary>{item.question}</summary>
-            <p>{item.answer}</p>
-          </details>
-        ))}
-      </section>
-
-      <section class="support-page__actions" aria-label="Support actions">
-        <a href={requestPath} class="support-page__cta">Request a language</a>
-        <a href={educatorsPath} class="support-page__link">School partnership info</a>
-        <a href="mailto:hello@first100.app" class="support-page__link">Email support</a>
-      </section>
+  <section class="section support">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Support</p>
+        <h1 class="section__title">How can we help?</h1>
+        <p class="section__lede">
+          Quick answers below. If yours isn't here, email <a href={`mailto:${contactEmail}`}>{contactEmail}</a> and we'll reply.
+        </p>
+      </div>
+      <Faq items={help} />
     </div>
-  </article>
+  </section>
+
+  <section class="section" aria-labelledby="about-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="about-title" class="section__title">About First100</h2>
+      </div>
+      <Faq items={FAQ} />
+      <p class="links">
+        <a href={withBase('/request-language')}>Request a language</a>
+        <a href={withBase('/privacy')}>Privacy</a>
+        <a href={withBase('/terms')}>Terms</a>
+      </p>
+    </div>
+  </section>
 
   <Footer slot="footer" />
 </BaseLayout>
 
 <style>
-  .support-page {
-    padding: var(--space-12) 0 var(--space-20);
+  .support {
+    background: linear-gradient(180deg, var(--cat-body), var(--color-bg) 60%);
   }
 
-  .support-page__hero {
-    text-align: center;
-    margin-bottom: var(--space-10);
-  }
-
-  .support-page__eyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-size: 0.72rem;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .support-page h1 {
-    margin-top: var(--space-3);
-    font-size: clamp(2rem, 3.2vw, 2.8rem);
-  }
-
-  .support-page__hero p {
-    margin-top: var(--space-4);
-    font-size: var(--font-size-md);
-  }
-
-  .support-page__faq {
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .support-page__item {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    padding: var(--space-4) var(--space-5);
-  }
-
-  .support-page__item summary {
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-  }
-
-  .support-page__item p {
-    margin-top: var(--space-3);
-    line-height: 1.65;
-  }
-
-  .support-page__actions {
-    margin-top: var(--space-10);
+  .links {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-3);
-  }
-
-  .support-page__cta,
-  .support-page__link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    border-radius: var(--radius-full);
-    padding: 10px 18px;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .support-page__cta {
-    color: var(--color-surface);
-    background: var(--color-accent);
-  }
-
-  .support-page__link {
-    color: var(--color-text);
-    background: #ffffff;
-    border: 1px solid var(--color-border);
+    gap: var(--space-6);
+    margin-top: var(--space-10);
+    font-weight: var(--font-weight-bold);
   }
 </style>

@@ -1,0 +1,59 @@
+---
+// A plain phone outline around real app content (a screenshot or the app video). Drawn in CSS,
+// so it stays sharp and weighs nothing.
+interface Props {
+  label?: string;
+  tilt?: number;
+}
+const { label, tilt = 0 } = Astro.props;
+---
+
+<figure class="phone" style={`--tilt:${tilt}deg`} aria-label={label}>
+  <div class="phone__screen">
+    <slot />
+  </div>
+</figure>
+
+<style>
+  .phone {
+    position: relative;
+    width: min(100%, 320px);
+    aspect-ratio: 9 / 19.2;
+    padding: 11px;
+    border-radius: 52px;
+    background: #2D2A26;
+    box-shadow: var(--shadow-xl);
+    rotate: var(--tilt);
+    margin: 0;
+  }
+
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 21px;
+    left: 50%;
+    translate: -50% 0;
+    width: 30%;
+    height: 24px;
+    border-radius: 999px;
+    background: #2D2A26;
+    z-index: 2;
+  }
+
+  .phone__screen {
+    position: relative;
+    height: 100%;
+    border-radius: 42px;
+    overflow: hidden;
+    background: var(--color-bg);
+    padding-top: 44px;
+  }
+
+  .phone__screen :global(img),
+  .phone__screen :global(video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+</style>

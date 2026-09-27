@@ -1,0 +1,44 @@
+---
+// The seven families from the app's Family cards, side by side.
+import { withBase } from '../utils/withBase';
+
+const families = [
+  withBase('/app/art/family.webp'),
+  ...['f1', 'f2', 'f3', 'f4', 'f5', 'f6'].map((f) => withBase(`/app/looks/family_${f}.webp`)),
+];
+---
+
+<ul class="families" aria-label="The seven families in First100">
+  {families.map((src, i) => (
+    <li class="families__item">
+      <img src={src} alt={`Family ${i + 1}`} width="512" height="512" loading="lazy" decoding="async" />
+    </li>
+  ))}
+</ul>
+
+<style>
+  .families {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .families__item {
+    border-radius: 20px;
+    background: var(--cat-family);
+    padding: var(--space-2);
+  }
+
+  .families__item img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  @media (max-width: 760px) {
+    .families {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

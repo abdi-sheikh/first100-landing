@@ -1,0 +1,111 @@
+---
+// Where each language lives: the 17 in First100 World, then the languages with their own app.
+import { OWN_APP_LANGUAGES, WORLD_LANGUAGES, scriptClass } from '../lib/catalog';
+import { WORLD, appStoreUrl } from '../data/apps';
+import { withBase } from '../utils/withBase';
+
+const worldLive = !!appStoreUrl(WORLD);
+---
+
+<div class="tiers">
+  <section class="tiers__group" aria-labelledby="tier-world">
+    <div class="tiers__head">
+      <h3 id="tier-world" class="tiers__title">{WORLD.name}</h3>
+      <p class="tiers__note">{WORLD_LANGUAGES.length} languages in one app · {worldLive ? 'On the App Store' : 'Coming soon to the App Store'}</p>
+    </div>
+    <ul class="tiers__grid">
+      {WORLD_LANGUAGES.map((l) => (
+        <li>
+          <a class="lang" href={withBase(`/l/${l.slug}`)}>
+            <span class:list={['lang__native', scriptClass(l.code)]}>{l.nativeName}</span>
+            {l.nativeName !== l.name && <span class="lang__name">{l.name}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="tiers__group" aria-labelledby="tier-own">
+    <div class="tiers__head">
+      <h3 id="tier-own" class="tiers__title">Languages with their own app</h3>
+      <p class="tiers__note">Each one a separate app, made for that language's families.</p>
+    </div>
+    <ul class="tiers__grid">
+      {OWN_APP_LANGUAGES.map((l) => (
+        <li>
+          <a class:list={['lang', { 'lang--live': l.status === 'available' }]} href={withBase(`/l/${l.slug}`)}>
+            <span class:list={['lang__native', scriptClass(l.code)]}>{l.nativeName}</span>
+            <span class="lang__name">{l.name} · {l.status === 'available' ? 'On the App Store' : 'Coming'}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</div>
+
+<style>
+  .tiers {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  .tiers__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-6);
+    margin-bottom: var(--space-5);
+  }
+
+  .tiers__title {
+    font-size: var(--font-size-xl);
+  }
+
+  .tiers__note {
+    color: var(--color-text-muted);
+  }
+
+  .tiers__grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .lang {
+    display: grid;
+    gap: 2px;
+    height: 100%;
+    padding: var(--space-4) var(--space-5);
+    border-radius: 16px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border-soft);
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .lang:hover {
+    box-shadow: var(--shadow-md), inset 0 0 0 1px var(--color-accent-soft);
+  }
+
+  .lang__native {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    line-height: 1.35;
+  }
+
+  .lang__native.script-urdu {
+    line-height: 1.9;
+  }
+
+  .lang__name {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  .lang--live .lang__name {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+  }
+</style>

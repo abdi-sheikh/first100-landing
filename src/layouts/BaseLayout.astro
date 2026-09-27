@@ -1,21 +1,27 @@
 ---
+import '@fontsource/andika/400.css';
+import '@fontsource/andika/700.css';
 import { withBase } from '../utils/withBase';
+import { WORLD, PRICING } from '../data/apps';
 
 interface Props {
   title: string;
   description?: string;
   canonicalUrl?: string;
   ogImage?: string;
+  /** App Store ID for Safari's Smart App Banner on this page, when the app is live. */
+  appStoreId?: string | null;
 }
 
 const {
   title,
-  description = "First Words for Kids — in hundreds of languages. Tap a picture. Hear the word. No ads.",
+  description = "First words for toddlers in 17 languages. Tap a picture, hear the word. No ads, no subscriptions.",
   canonicalUrl,
-  ogImage = withBase('/og-image.svg')
+  ogImage = new URL(withBase('/og-image.png'), Astro.site).href,
+  appStoreId = null,
 } = Astro.props;
 
-const siteTitle = title === "First 100" ? title : `${title} | First 100`;
+const siteTitle = title === "First100" ? title : `${title} | First100`;
 const currentUrl = canonicalUrl || Astro.url.href;
 const faviconPath = withBase('/favicon.svg');
 
@@ -57,25 +63,18 @@ const ga4Id = '';
     
     <title>{siteTitle}</title>
     
-    <!-- Preload critical fonts if we add custom ones later -->
-    
+    {appStoreId && <meta name="apple-itunes-app" content={`app-id=${appStoreId}`} />}
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "First 100",
+      "@type": "MobileApplication",
+      "name": WORLD.name,
       "applicationCategory": "EducationalApplication",
-      "operatingSystem": "iOS, Android",
-      "offers": {
-        "@type": "Offer",
-        "price": "2.99",
-        "priceCurrency": "USD"
-      },
+      "operatingSystem": "iOS",
+      "offers": PRICING.tiers.map((t) => ({ "@type": "Offer", "name": t.name, "price": t.price.replace('$', ''), "priceCurrency": "USD" })),
       "description": description,
-      "author": {
-        "@type": "Organization",
-        "name": "First 100"
-      }
+      "author": { "@type": "Organization", "name": "First100" }
     })} />
 
     <!-- ===================== Analytics ===================== -->

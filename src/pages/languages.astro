@@ -2,243 +2,46 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import LanguageCard from '../components/LanguageCard.astro';
-import SearchInput from '../components/SearchInput.astro';
-import StickerSet from '../components/StickerSet.astro';
+import LanguageTiers from '../components/LanguageTiers.astro';
 import { withBase } from '../utils/withBase';
-import languageData from '../data/languages.json';
-import stickerData from '../data/stickers.json';
-
-// Sort languages alphabetically and group by first letter
-const sortedLanguages = [...languageData.languages].sort((a, b) => 
-  a.name.localeCompare(b.name)
-);
-
-// Group by first letter
-const groupedLanguages = sortedLanguages.reduce((acc, lang) => {
-  const letter = lang.name[0].toUpperCase();
-  if (!acc[letter]) {
-    acc[letter] = [];
-  }
-  acc[letter].push(lang);
-  return acc;
-}, {} as Record<string, typeof sortedLanguages>);
-
-const letters = Object.keys(groupedLanguages).sort();
-const totalLanguages = languageData.languages.length;
-const availableCount = languageData.languages.filter(l => l.status === 'available').length;
-const headerStickers = stickerData.stickers.slice(8, 13);
-const requestPath = withBase('/request-language');
+import { LANGUAGES, WORLD_LANGUAGES } from '../lib/catalog';
+import { WORLD } from '../data/apps';
 ---
 
-<BaseLayout 
-  title="Languages" 
-  description={`Browse ${totalLanguages} languages available in First 100. Find your language and start teaching first words to your toddler.`}
+<BaseLayout
+  title="Languages"
+  description={`First100 in ${LANGUAGES.length} languages: ${WORLD_LANGUAGES.length} in ${WORLD.name}, and languages with their own app, starting with Somali.`}
 >
   <Header slot="header" currentPath="/languages" />
-  
-  <section class="languages-page">
+
+  <section class="section languages">
     <div class="container">
-      <!-- Page Header -->
-      <header class="languages-page__header">
-        <h1 class="languages-page__title">Languages</h1>
-        <p class="languages-page__subtitle">
-          {availableCount} available now, {totalLanguages - availableCount} coming soon
+      <div class="section__head">
+        <p class="eyebrow">Languages</p>
+        <h1 class="section__title">Find your family's language.</h1>
+        <p class="section__lede">
+          {WORLD_LANGUAGES.length} languages live together in {WORLD.name}; a few have an app of their own.
+          Every one has the same pictures and first words, made for toddlers.
         </p>
-        <div class="languages-page__stickers" aria-hidden="true">
-          <StickerSet variant="cluster" stickers={headerStickers} />
-        </div>
-        <a href={requestPath} class="languages-page__request">Need a different language? Request it.</a>
-      </header>
-      
-      <!-- Search -->
-      <div class="languages-page__search">
-        <SearchInput placeholder="Search languages..." />
       </div>
-      
-      <!-- Language Directory -->
-      <div class="languages-directory">
-        {letters.map((letter) => (
-          <div class="letter-group" data-letter-group={letter}>
-            <h2 class="letter-group__heading" id={`letter-${letter}`}>{letter}</h2>
-            <div class="letter-group__grid">
-              {groupedLanguages[letter].map((language) => (
-                <LanguageCard language={language} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      <!-- No Results Message (hidden by default) -->
-      <div class="no-results" id="no-results" hidden>
-        <p class="no-results__text">No languages found matching your search.</p>
-        <button type="button" class="no-results__clear" data-clear-search>Clear search</button>
-      </div>
+      <LanguageTiers />
+      <p class="request">Not here yet? <a href={withBase('/request-language')}>Ask for your language →</a></p>
     </div>
   </section>
-  
+
   <Footer slot="footer" />
 </BaseLayout>
 
 <style>
-  .languages-page {
-    padding: var(--space-12) 0 var(--space-20);
-    min-height: 70vh;
-  }
-  
-  .languages-page__header {
-    position: relative;
-    text-align: center;
-    margin-bottom: var(--space-10);
+  .languages {
+    background: linear-gradient(180deg, var(--cat-animals), var(--color-bg) 40%);
   }
 
-  .languages-page__stickers {
-    position: absolute;
-    top: -18px;
-    right: -10px;
-    max-width: 260px;
-    opacity: 0.9;
+  .request {
+    margin-top: var(--space-10);
   }
-  
-  .languages-page__title {
-    font-size: var(--font-size-4xl);
+
+  .request a {
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-3);
-  }
-  
-  .languages-page__subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    margin: 0;
-  }
-
-  .languages-page__request {
-    margin-top: var(--space-5);
-    display: inline-flex;
-    text-decoration: none;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: #ffffff;
-    color: var(--color-text);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    padding: 9px 14px;
-  }
-
-  .languages-page__request:hover {
-    color: var(--color-accent);
-    border-color: rgba(74, 124, 89, 0.32);
-  }
-  
-  .languages-page__search {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--space-12);
-  }
-  
-  .languages-directory {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-12);
-  }
-  
-  .letter-group__heading {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
-    padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
-  }
-  
-  .letter-group__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-5);
-  }
-  
-  .no-results {
-    text-align: center;
-    padding: var(--space-16) 0;
-  }
-  
-  .no-results__text {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
-  }
-  
-  .no-results__clear {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-accent);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-decoration: underline;
-    transition: color var(--transition-fast);
-  }
-  
-  .no-results__clear:hover {
-    color: var(--color-accent-hover);
-  }
-  
-  .no-results[hidden] {
-    display: none;
-  }
-  
-  @media (max-width: 768px) {
-    .languages-page__title {
-      font-size: var(--font-size-3xl);
-    }
-
-    .languages-page__stickers {
-      position: static;
-      margin-top: var(--space-6);
-      max-width: none;
-      justify-content: center;
-    }
-    
-    .letter-group__grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>
-
-<script>
-  // Enhanced search with no-results handling
-  const searchInput = document.querySelector('[data-search]') as HTMLInputElement;
-  const noResults = document.getElementById('no-results');
-  const clearSearchBtn = document.querySelector('[data-clear-search]');
-  
-  function updateNoResultsVisibility() {
-    if (!noResults) return;
-    
-    const visibleCards = document.querySelectorAll('[data-language]:not([style*="display: none"])');
-    noResults.hidden = visibleCards.length > 0;
-  }
-  
-  if (searchInput) {
-    // Create a MutationObserver to detect when cards are hidden/shown
-    const observer = new MutationObserver(updateNoResultsVisibility);
-    
-    document.querySelectorAll('[data-language]').forEach(card => {
-      observer.observe(card, { attributes: true, attributeFilter: ['style'] });
-    });
-    
-    searchInput.addEventListener('input', () => {
-      // Small delay to let the search filtering complete
-      requestAnimationFrame(updateNoResultsVisibility);
-    });
-  }
-  
-  if (clearSearchBtn && searchInput) {
-    clearSearchBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      searchInput.dispatchEvent(new Event('input'));
-      searchInput.focus();
-    });
-  }
-</script>

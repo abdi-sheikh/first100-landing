@@ -6,19 +6,25 @@
 interface Props {
   source?: string;
   language?: string | null;
+  title?: string;
+  body?: string;
+  button?: string;
 }
-const { source = 'blog', language = null } = Astro.props;
+const {
+  source = 'blog',
+  language = null,
+  title = 'Get one good idea a week',
+  body = 'Short, practical tips for raising a bilingual child — sent once a week. No spam, unsubscribe anytime.',
+  button = 'Sign up',
+} = Astro.props;
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <aside class="newsletter">
   <div class="newsletter__inner">
-    <h3 class="newsletter__title">Get one good idea a week</h3>
-    <p class="newsletter__body">
-      Short, practical tips for raising a bilingual child — sent once a week.
-      No spam, unsubscribe anytime.
-    </p>
+    <h3 class="newsletter__title">{title}</h3>
+    <p class="newsletter__body">{body}</p>
     <form class="newsletter__form" id="newsletter-form" novalidate>
       <input
         type="email"
@@ -29,7 +35,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         aria-label="Email address"
         autocomplete="email"
       />
-      <button type="submit" class="newsletter__button">Sign up</button>
+      <button type="submit" class="newsletter__button">{button}</button>
     </form>
     <p class="newsletter__status" id="newsletter-status" role="status" aria-live="polite"></p>
   </div>

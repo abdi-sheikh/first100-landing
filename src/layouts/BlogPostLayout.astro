@@ -35,7 +35,7 @@ const articleJsonLd = {
   headline: post.title,
   description: post.description,
   author: { '@type': 'Organization', name: post.author },
-  publisher: { '@type': 'Organization', name: 'First 100' },
+  publisher: { '@type': 'Organization', name: 'First100' },
   datePublished: post.pub_date ?? undefined,
   dateModified: post.updated_date ?? post.pub_date ?? undefined,
   image: post.hero_image_url ?? undefined,

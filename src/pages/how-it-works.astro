@@ -2,357 +2,172 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import WordDemo from '../components/WordDemo.astro';
-import CategoryRoadmap from '../components/CategoryRoadmap.astro';
-import showcaseData from '../data/showcase-variants.json';
-import marketingData from '../data/marketing-localizations.json';
+import PhoneFrame from '../components/PhoneFrame.astro';
+import HearIt from '../components/HearIt.astro';
 import { withBase } from '../utils/withBase';
+import { PRICING } from '../data/apps';
 
-const languagesPath = withBase('/languages');
-const parentsPath = withBase('/for-parents');
-const requestPath = withBase('/request-language');
-
-const baseMarketingTemplates = [
-  { id: 'appmarketing01', category: 'Actions', imagePath: withBase('/marketing/base/appmarketing01.png') },
-  { id: 'appmarketing02', category: 'Animals', imagePath: withBase('/marketing/base/appmarketing02.png') },
-  { id: 'appmarketing03', category: 'Home Objects', imagePath: withBase('/marketing/base/appmarketing03.png') },
-  { id: 'appmarketing04', category: 'Colors', imagePath: withBase('/marketing/base/appmarketing04.png') },
-  { id: 'appmarketing05', category: 'Family', imagePath: withBase('/marketing/base/appmarketing05.png') },
-  { id: 'appmarketing06', category: 'Nature', imagePath: withBase('/marketing/base/appmarketing06.png') },
+const steps = [
+  {
+    title: 'Pick your language',
+    body: 'Choose the language your family speaks, or the one your child is learning. Each word shows in that language, with its English underneath.',
+    img: '/app/screens/ja_menu.webp',
+    alt: 'The category menu in Japanese, with the language name and a pencil to change it',
+  },
+  {
+    title: 'Tap a picture, hear the word',
+    body: 'The word plays the moment a finger lands. Animals follow their name with their sound. Hold a card to save it.',
+    img: '/app/screens/es.webp',
+    alt: 'The Animals cards in Spanish: gato, perro, vaca, cabra, oveja, caballo',
+  },
+  {
+    title: 'Move through the day',
+    body: `${PRICING.categories} categories, from Animals and Food & Drink to Feelings and Actions. ${PRICING.freeCategories} are free; the rest unlock with one purchase.`,
+    img: '/app/screens/hi_food.webp',
+    alt: 'The Food & Drink cards in Hindi: milk, water, bread, biryani, banana, apple',
+  },
 ];
 
-const localizedItems = (marketingData.items || []).slice(0, 12);
-const categoryItems = (showcaseData.items || []).slice(0, 12);
+const categories = [
+  ['Animals', true], ['Colors', true], ['Family', true], ['Food & Drink', true],
+  ['Body Parts', false], ['Numbers', false], ['Actions', false], ['Nature', false],
+  ['Feelings', false], ['Yes, no and more', false], ['Around the house', false], ['Every day', false],
+] as const;
 ---
 
-<BaseLayout
-  title="How It Works"
-  description="See how First 100 helps toddlers learn first words through simple visuals, native audio, and repeat practice."
->
+<BaseLayout title="How it works" description="How First100 works: pick a language, tap a picture, hear the word. 100 first words in 12 categories.">
   <Header slot="header" currentPath="/how-it-works" />
 
-  <article class="how-page">
+  <section class="section how-hero">
     <div class="container">
-      <header class="how-page__hero">
-        <p class="how-page__eyebrow">How It Works</p>
-        <h1 class="how-page__title">A calm, repeatable flow for early language learning</h1>
-        <p class="how-page__subtitle">
-          First 100 keeps sessions simple for toddlers: clear visuals, native pronunciation, and quick repetition in short bursts.
-        </p>
-      </header>
-
-      <section class="how-steps" aria-label="How First 100 works">
-        <article class="how-step">
-          <p class="how-step__number">1</p>
-          <h2 class="how-step__title">Tap a clear visual</h2>
-          <p class="how-step__copy">Children focus on one concept at a time with clean, recognizable picture cards.</p>
-        </article>
-        <article class="how-step">
-          <p class="how-step__number">2</p>
-          <h2 class="how-step__title">Hear native pronunciation</h2>
-          <p class="how-step__copy">Every word is spoken naturally so children hear the language as families actually use it.</p>
-        </article>
-        <article class="how-step">
-          <p class="how-step__number">3</p>
-          <h2 class="how-step__title">Repeat and retain</h2>
-          <p class="how-step__copy">Short, repeatable practice helps toddlers build confidence without overwhelm.</p>
-        </article>
-      </section>
-
-      <section class="how-screens" aria-label="App screenshots">
-        <h2 class="how-screens__title">Core app view</h2>
-        <div class="how-screens__strip">
-          <img src={withBase('/screenshots/app-screen-1.png')} alt="First 100 app screenshot showing action words" width="280" height="580" loading="lazy" decoding="async" />
-          <img src={withBase('/screenshots/app-screen-2.png')} alt="First 100 app screenshot showing animal words" width="280" height="580" loading="lazy" decoding="async" />
-          <img src={withBase('/screenshots/app-screen-3.png')} alt="First 100 app screenshot showing nature words" width="280" height="580" loading="lazy" decoding="async" />
-        </div>
-      </section>
-
-      <section class="how-gallery" aria-label="Theme examples">
-        <div class="how-gallery__header">
-          <h2>Learning themes families use most</h2>
-          <p>Each app follows the same design language across categories such as animals, family, actions, and nature.</p>
-        </div>
-        <div class="how-gallery__posters">
-          {baseMarketingTemplates.map((template) => (
-            <article class="how-poster">
-              <img src={template.imagePath} alt={`${template.category} learning theme preview`} loading="lazy" decoding="async" width="248" height="536" />
-              <p>{template.category}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section class="how-gallery" aria-label="Localized examples">
-        <div class="how-gallery__header">
-          <h2>Localized examples</h2>
-          <p>Preview how the same app structure adapts for different language communities.</p>
-        </div>
-        {localizedItems.length > 0 ? (
-          <div class="how-gallery__posters">
-            {localizedItems.map((item) => (
-              <article class="how-poster">
-                <img src={withBase(item.imagePath)} alt={`${item.category} preview in ${item.language}`} loading="lazy" decoding="async" width="248" height="536" />
-                <p>{item.language}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div class="how-empty">More localized examples are being added.</div>
-        )}
-      </section>
-
-      <WordDemo languageSlug="somali" languageName="Somali" nativeName="Soomaali" />
-
-      <CategoryRoadmap />
-
-      <section class="how-gallery" aria-label="Category example gallery">
-        <div class="how-gallery__header">
-          <h2>Category gallery</h2>
-          <p>Sample visual sets children see while practicing first words.</p>
-        </div>
-        {categoryItems.length > 0 ? (
-          <div class="how-gallery__cards">
-            {categoryItems.map((item) => (
-              <article class="how-card">
-                <img src={withBase(item.imagePath)} alt={`${item.category} example card`} loading="lazy" decoding="async" width="320" height="320" />
-                <p>{item.category}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div class="how-empty">Category previews are loading soon.</div>
-        )}
-      </section>
-
-      <section class="how-page__cta">
-        <a href={languagesPath} class="how-page__cta-primary">Browse Languages</a>
-        <a href={parentsPath} class="how-page__cta-secondary">See Parent Pricing</a>
-        <a href={requestPath} class="how-page__cta-secondary">Request a Language</a>
-      </section>
+      <div class="section__head">
+        <p class="eyebrow">How it works</p>
+        <h1 class="section__title">Three things to know.</h1>
+      </div>
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li class="step">
+            <PhoneFrame label={s.alt}>
+              <img src={withBase(s.img)} alt={s.alt} width="600" height="1300" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" />
+            </PhoneFrame>
+            <div class="step__copy">
+              <p class="step__num">{i + 1}</p>
+              <h2 class="step__title">{s.title}</h2>
+              <p>{s.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
-  </article>
+  </section>
+
+  <section class="section section--hear" aria-labelledby="hear-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="hear-title" class="section__title">Try it here.</h2>
+        <p class="section__lede">The app's own pictures and voices. Pick a language and tap a card.</p>
+      </div>
+      <HearIt start="hi" />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cats-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="cats-title" class="section__title">{PRICING.categories} categories, {PRICING.words} words</h2>
+        <p class="section__lede">The first four are free in every language.</p>
+      </div>
+      <ul class="cats">
+        {categories.map(([name, free]) => (
+          <li class:list={['cat', { 'cat--free': free }]}>
+            <span>{name}</span>
+            {free && <span class="cat__free">Free</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 
   <Footer slot="footer" />
 </BaseLayout>
 
 <style>
-  .how-page {
-    padding: var(--space-12) 0 var(--space-20);
+  .how-hero {
+    background: linear-gradient(180deg, var(--cat-animals), var(--color-bg) 60%);
   }
 
-  .how-page__hero {
-    text-align: center;
-    max-width: 860px;
-    margin: 0 auto var(--space-12);
-  }
-
-  .how-page__eyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-size: 0.72rem;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .how-page__title {
-    margin-top: var(--space-3);
-    font-size: clamp(1.9rem, 3.2vw, 3rem);
-  }
-
-  .how-page__subtitle {
-    margin-top: var(--space-4);
-    font-size: var(--font-size-md);
-    color: var(--color-text-muted);
-    line-height: 1.7;
-  }
-
-  .how-steps {
+  .steps {
+    list-style: none;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-5);
-    margin-bottom: var(--space-12);
+    gap: var(--space-10);
   }
 
-  .how-step {
-    padding: var(--space-6);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
+  .step {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: var(--space-6);
   }
 
-  .how-step__number {
-    margin: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-surface);
+  .step :global(.phone) {
+    width: min(100%, 260px);
+  }
+
+  .step__copy {
+    display: grid;
+    gap: var(--space-2);
+    max-width: 22rem;
+  }
+
+  .step__num {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
     background: var(--color-accent);
+    color: var(--color-surface);
+    font-weight: var(--font-weight-bold);
   }
 
-  .how-step__title {
-    margin: var(--space-3) 0 0;
-    font-size: var(--font-size-lg);
+  .step__title {
+    font-size: var(--font-size-xl);
   }
 
-  .how-step__copy {
-    margin: var(--space-3) 0 0;
-    line-height: 1.65;
-  }
-
-  .how-screens {
-    margin-bottom: var(--space-10);
-  }
-
-  .how-screens__title {
-    margin-bottom: var(--space-5);
-    text-align: center;
-  }
-
-  .how-screens__strip {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-4);
-  }
-
-  .how-screens__strip img {
-    width: 100%;
-    height: auto;
-    border-radius: 20px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
+  .section--hear {
     background: var(--color-surface);
-    object-fit: cover;
   }
 
-  .how-gallery {
-    margin-top: var(--space-12);
-  }
-
-  .how-gallery__header h2 {
-    margin: 0;
-    font-size: clamp(1.4rem, 2.5vw, 2rem);
-  }
-
-  .how-gallery__header p {
-    margin-top: var(--space-3);
-    max-width: 760px;
-  }
-
-  .how-gallery__posters {
-    margin-top: var(--space-5);
+  .cats {
+    list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .how-poster {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--color-surface);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .how-poster img {
-    width: 100%;
-    aspect-ratio: 1242 / 2688;
-    object-fit: cover;
-    display: block;
-  }
-
-  .how-poster p {
-    margin: 0;
-    padding: var(--space-3);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    font-weight: var(--font-weight-semibold);
-    text-align: center;
-  }
-
-  .how-gallery__cards {
-    margin-top: var(--space-5);
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .how-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--color-surface);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .how-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    display: block;
-  }
-
-  .how-card p {
-    margin: 0;
-    padding: var(--space-3);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    text-align: center;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .how-empty {
-    margin-top: var(--space-5);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    color: var(--color-text-muted);
-  }
-
-  .how-page__cta {
-    margin-top: var(--space-12);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--space-3);
   }
 
-  .how-page__cta-primary,
-  .how-page__cta-secondary {
-    display: inline-flex;
+  .cat {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    border-radius: var(--radius-full);
-    padding: 10px 18px;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .how-page__cta-primary {
-    color: var(--color-surface);
-    background: var(--color-accent);
-  }
-
-  .how-page__cta-secondary {
+    padding: var(--space-4) var(--space-5);
+    border-radius: 16px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border-soft);
     color: var(--color-text);
-    background: #ffffff;
-    border: 1px solid var(--color-border);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .cat__free {
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
   }
 
   @media (max-width: 900px) {
-    .how-steps,
-    .how-screens__strip {
+    .steps {
       grid-template-columns: 1fr;
-    }
-
-    .how-screens__strip {
-      max-width: 430px;
-      margin: 0 auto;
     }
   }
 </style>

@@ -2,367 +2,362 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import LanguageCard from '../components/LanguageCard.astro';
-import TrustSignals from '../components/TrustSignals.astro';
-import IllustrationField from '../components/IllustrationField.astro';
-import StickerSet from '../components/StickerSet.astro';
-import SocialProof from '../components/SocialProof.astro';
+import PhoneFrame from '../components/PhoneFrame.astro';
+import AppStoreBadge from '../components/AppStoreBadge.astro';
+import HearIt from '../components/HearIt.astro';
+import FamilyStrip from '../components/FamilyStrip.astro';
+import Pricing from '../components/Pricing.astro';
+import LanguageTiers from '../components/LanguageTiers.astro';
+import Faq from '../components/Faq.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
 import { withBase } from '../utils/withBase';
-import languageData from '../data/languages.json';
-import stickerData from '../data/stickers.json';
+import { WORLD, SOMALI, PRICING, appStoreUrl } from '../data/apps';
+import { WORLD_LANGUAGES } from '../lib/catalog';
+import { FAQ } from '../data/faq';
 
-// Featured languages: available first, then coming-soon (homepage only)
-const featuredLanguages = languageData.languages
-  .filter(lang => lang.featured)
-  .sort((a, b) => (a.status === 'available' ? 0 : 1) - (b.status === 'available' ? 0 : 1));
-const totalLanguages = languageData.languages.length;
-const railStickers = stickerData.stickers;
-const languagesPath = withBase('/languages');
-const howItWorksPath = withBase('/how-it-works');
-const parentsPath = withBase('/for-parents');
-const educatorsPath = withBase('/for-educators');
+const worldStore = appStoreUrl(WORLD);
+const somaliStore = appStoreUrl(SOMALI);
+const count = WORLD_LANGUAGES.length;
+const video = withBase('/app/video/cow-in-17-languages.mp4');
+const poster = withBase('/app/video/cow-poster.webp');
 ---
 
-<BaseLayout title="First 100" description="First Words for Kids — in your home language. Tap a picture. Hear the word. No ads.">
+<BaseLayout
+  title="First100"
+  description={`First words for toddlers in ${count} languages. Tap a picture, hear the word in your family's language. No ads, no subscriptions.`}
+  appStoreId={WORLD.appStoreId}
+>
   <Header slot="header" currentPath="/" />
-  
-  <!-- Hero Section -->
+
   <section class="hero">
-    <IllustrationField variant="hero" />
-    <div class="hero__content container">
-      <h1 class="hero__headline">
-        First Words for Kids —<br />
-        <span class="hero__headline-accent">in your home language.</span>
-      </h1>
-      <p class="hero__subheadline">
-        Tap a picture. Hear the word. No ads.
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">{WORLD.name} · {count} languages</p>
+        <h1 class="hero__title">First words in your family's language.</h1>
+        <p class="hero__lede">
+          A toddler touches a picture and hears the word, in Spanish, Hindi, Urdu, Mandarin and {count - 4} more.
+          {PRICING.words} words, {PRICING.categories} categories, made for a small hand.
+        </p>
+        <div class="hero__get" id="get">
+          <AppStoreBadge href={worldStore} appName={WORLD.name} size="large" notifyHref="#notify" cta="hero" />
+        </div>
+        <p class="hero__promise">No ads. No subscriptions. No accounts.</p>
+        {somaliStore && (
+          <p class="hero__somali">
+            Somali family? <a href={withBase('/l/somali')}>{SOMALI.name} is on the App Store now →</a>
+          </p>
+        )}
+      </div>
+
+      <div class="hero__visual">
+        <PhoneFrame label="The First100 app: one cow, said in 17 languages">
+          <video class="hero__video" src={video} poster={poster} autoplay muted loop playsinline preload="metadata" aria-label="A cow card in the app, with the word said in 17 languages"></video>
+        </PhoneFrame>
+        <button type="button" class="hero__sound" aria-pressed="false">Play with sound</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--hear" aria-labelledby="hear-title">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Try it here</p>
+        <h2 id="hear-title" class="section__title">Tap a picture. Hear the word.</h2>
+        <p class="section__lede">The same pictures and voices as the app. Pick a language, then tap the cow.</p>
+      </div>
+      <HearIt start="es" />
+    </div>
+  </section>
+
+  <section class="section section--hand" aria-labelledby="hand-title">
+    <div class="container split">
+      <div class="split__visual">
+        <PhoneFrame label="The Family category in Spanish" tilt={-2}>
+          <img src={withBase('/app/screens/es_family.webp')} alt="The Family cards in Spanish: mamá, papá, bebé, hermano, hermana, abuela" width="600" height="1300" loading="lazy" decoding="async" />
+        </PhoneFrame>
+      </div>
+      <div class="split__copy">
+        <p class="eyebrow">Made for a toddler's hand</p>
+        <h2 id="hand-title" class="section__title">Nothing to read. Nothing to break.</h2>
+        <ul class="points">
+          <li><strong>The word plays the moment a finger lands.</strong> Small children press and hold; they still hear it.</li>
+          <li><strong>Grown-up things need a grown-up.</strong> Buying takes a deliberate press-and-hold, and settings sit behind a quick sum.</li>
+          <li><strong>Hold a card to save it.</strong> A child's favourite words collect under the star.</li>
+          <li><strong>Hear it in English too.</strong> One switch plays each word's English, for families learning together.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--families" aria-labelledby="families-title">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Families like yours</p>
+        <h2 id="families-title" class="section__title">Seven families, drawn with care.</h2>
+        <p class="section__lede">
+          Parents, grandparents, brothers and sisters, and the children in Actions and Feelings, in a range of skin
+          tones and everyday clothes. Each language starts with one family; in the grown-ups area you can choose another,
+          or meet a different family every day.
+        </p>
+      </div>
+      <FamilyStrip />
+    </div>
+  </section>
+
+  <section class="section section--trust" aria-labelledby="trust-title">
+    <div class="container trust">
+      <div>
+        <p class="eyebrow">Words you can trust</p>
+        <h2 id="trust-title" class="section__title">Checked, word by word.</h2>
+      </div>
+      <p class="trust__copy">
+        Every language gets the same {PRICING.words} first words: the ones young children learn first, like
+        <em>mama</em>, <em>milk</em>, <em>dog</em> and <em>ball</em>. The words are checked against published dictionaries,
+        language by language, and every recording goes through a listening test, so the word your child hears is the word it should be.
       </p>
-      <a href={languagesPath} class="hero__cta">
-        Find your language
-        <svg class="hero__cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
     </div>
   </section>
 
-  <section class="pathways">
+  <section class="section section--pricing" aria-labelledby="pricing-title">
     <div class="container">
-      <div class="pathways__grid">
-        <a href={howItWorksPath} class="pathways__card">
-          <p class="pathways__eyebrow">Explore Product</p>
-          <h2 class="pathways__title">How It Works</h2>
-          <p class="pathways__copy">See the tap-hear-repeat flow, sample content categories, and what toddlers experience in each session.</p>
-        </a>
-        <a href={parentsPath} class="pathways__card">
-          <p class="pathways__eyebrow">For Families</p>
-          <h2 class="pathways__title">Parent Pricing</h2>
-          <p class="pathways__copy">Each app is $2.99 one-time, with optional themed add-on packs and seasonal word categories.</p>
-        </a>
-        <a href={educatorsPath} class="pathways__card">
-          <p class="pathways__eyebrow">For Schools</p>
-          <h2 class="pathways__title">Educator Plans</h2>
-          <p class="pathways__copy">Classroom rollout, multi-device support, and enterprise-style purchasing via direct contact.</p>
-        </a>
+      <div class="section__head">
+        <p class="eyebrow">Pricing</p>
+        <h2 id="pricing-title" class="section__title">Try it free. Unlock once.</h2>
+        <p class="section__lede">
+          {PRICING.freeCategoryNames.join(', ').replace(/, ([^,]*)$/, ' and $1')} are free in every language. Keep the rest
+          of a language, or all of them, with one purchase.
+        </p>
       </div>
+      <Pricing />
     </div>
   </section>
 
-  <section class="sticker-rail" aria-label="Sticker translations preview">
+  <section class="section section--languages" aria-labelledby="languages-title">
     <div class="container">
-      <StickerSet variant="rail" stickers={railStickers} />
-      <div class="sticker-rail__pitch" role="note" aria-label="Learning value">
-        <p class="sticker-rail__eyebrow">Designed For Early Fluency</p>
-        <p class="sticker-rail__title">Give families a first-words experience that feels personal, trusted, and ready from day one.</p>
-        <p class="sticker-rail__copy">Clean visuals, native-word audio, and culturally familiar vocabulary help children connect faster and keep practicing.</p>
-        <a href={languagesPath} class="sticker-rail__cta">See Available Languages</a>
+      <div class="section__head">
+        <p class="eyebrow">Languages</p>
+        <h2 id="languages-title" class="section__title">{count} languages in one app.</h2>
       </div>
+      <LanguageTiers />
+      <p class="request">Is your family's language missing? <a href={withBase('/request-language')}>Tell us which one →</a></p>
     </div>
   </section>
-  
-  <!-- Language Preview Section -->
-  <section class="languages-preview">
+
+  <section class="section section--faq" aria-labelledby="faq-title">
     <div class="container">
-      <div class="languages-preview__header">
-        <h2 class="languages-preview__title">Popular Languages</h2>
-        <a href={languagesPath} class="languages-preview__link">
-          See all {totalLanguages} languages →
-        </a>
+      <div class="section__head">
+        <h2 id="faq-title" class="section__title">Questions parents ask</h2>
       </div>
-      <div class="languages-preview__grid">
-        {featuredLanguages.map((language) => (
-          <LanguageCard language={language} />
-        ))}
-      </div>
+      <Faq items={FAQ} />
     </div>
   </section>
-  
-  <!-- Trust Signals Section -->
-  <TrustSignals />
-  <SocialProof />
-  
+
+  <section class="section section--notify" id="notify" aria-labelledby="notify-title">
+    <div class="container notify">
+      <h2 id="notify-title" class="section__title">{worldStore ? 'Get First100 today.' : `${WORLD.name} is almost here.`}</h2>
+      {worldStore ? (
+        <AppStoreBadge href={worldStore} appName={WORLD.name} size="large" cta="footer" />
+      ) : (
+        <NewsletterSignup source="launch" title="Hear it first" body="One email when the app is on the App Store. Nothing else unless you ask." button="Tell me" />
+      )}
+    </div>
+  </section>
+
   <Footer slot="footer" />
 </BaseLayout>
 
+<script>
+  const video = document.querySelector<HTMLVideoElement>('.hero__video');
+  const button = document.querySelector<HTMLButtonElement>('.hero__sound');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) video?.pause();
+  button?.addEventListener('click', () => {
+    if (!video) return;
+    const on = video.muted;
+    video.muted = !on;
+    if (on) { video.currentTime = 0; video.play().catch(() => {}); }
+    button.setAttribute('aria-pressed', String(on));
+    button.textContent = on ? 'Mute' : 'Play with sound';
+  });
+</script>
+
 <style>
-  /* Hero Section */
   .hero {
-    position: relative;
-    min-height: 70vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-20) 0;
-    overflow: hidden;
-  }
-  
-  .hero__content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    max-width: 800px;
-  }
-  
-  .hero__headline {
-    font-size: var(--font-size-5xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    line-height: 1.1;
-    margin-bottom: var(--space-6);
-    letter-spacing: var(--letter-spacing-tight);
-  }
-  
-  .hero__headline-accent {
-    color: var(--color-accent);
-  }
-  
-  .hero__subheadline {
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-10);
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .hero__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-8);
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-surface);
-    background: var(--color-accent);
-    border-radius: var(--radius-full);
-    text-decoration: none;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
-  }
-  
-  .hero__cta:hover {
-    background: var(--color-accent-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    color: var(--color-surface);
-  }
-  
-  .hero__cta-icon {
-    width: 20px;
-    height: 20px;
-    transition: transform var(--transition-fast);
-  }
-  
-  .hero__cta:hover .hero__cta-icon {
-    transform: translateX(4px);
+    padding-block: clamp(40px, 7vw, 96px) clamp(56px, 8vw, 112px);
+    background: linear-gradient(180deg, var(--cat-animals), var(--color-bg) 85%);
   }
 
-  .pathways {
-    padding: var(--space-12) 0;
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 96px);
+  }
+
+  .hero__copy {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+
+  .hero__title {
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    max-width: 15ch;
+    overflow-wrap: normal;
+  }
+
+  .hero__lede {
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+    max-width: 34rem;
+  }
+
+  .hero__get {
+    margin-top: var(--space-2);
+  }
+
+  .hero__promise {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  .hero__somali {
+    font-size: var(--font-size-sm);
+  }
+
+  .hero__somali a {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .hero__visual {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-4);
+  }
+
+  /* The social cut keeps its bottom quarter clear for TikTok's buttons; inside a phone that
+     reads as empty, so zoom in slightly from the top. */
+  .hero__video {
+    background: var(--cat-animals);
+    transform: scale(1.2);
+    transform-origin: 50% 6%;
+  }
+
+  .hero__sound {
+    border: 0;
+    border-radius: var(--radius-full);
+    padding: 10px 18px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+  }
+
+  .hero__sound[aria-pressed='true'] {
+    background: var(--color-accent);
+    color: var(--color-surface);
+  }
+
+  .section--hear {
     background: var(--color-surface);
   }
 
-  .pathways__grid {
+  .split {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 96px);
+  }
+
+  .split__visual {
+    display: grid;
+    justify-items: center;
+  }
+
+  .split__copy {
+    display: grid;
     gap: var(--space-5);
   }
 
-  .pathways__card {
+  .points {
+    list-style: none;
+    display: grid;
+    gap: var(--space-5);
+    max-width: 36rem;
+  }
+
+  .points li {
+    color: var(--color-text-muted);
+    padding-left: var(--space-5);
+    border-left: 3px solid var(--chip-family);
+  }
+
+  .points strong {
     display: block;
-    padding: var(--space-6);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, #ffffff, #f8fcf9);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-  }
-
-  .pathways__card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: rgba(74, 124, 89, 0.3);
-  }
-
-  .pathways__eyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-size: 0.7rem;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .pathways__title {
-    margin: var(--space-3) 0 0;
-    font-size: var(--font-size-xl);
     color: var(--color-text);
   }
 
-  .pathways__copy {
-    margin: var(--space-3) 0 0;
-    color: var(--color-text-muted);
-    line-height: 1.65;
+  .section--families {
+    background: var(--cat-family);
   }
 
-  /* Languages Preview Section */
-  .languages-preview {
-    padding: var(--space-20) 0;
+  .section--families :global(.families__item) {
     background: var(--color-surface);
   }
 
-  .sticker-rail {
-    padding: var(--space-4) 0 var(--space-12);
-    background:
-      radial-gradient(circle at 12% 16%, rgba(168, 213, 186, 0.24), transparent 44%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.66), var(--color-surface));
-  }
-
-  .sticker-rail__pitch {
-    margin: var(--space-8) auto 0;
-    max-width: 880px;
-    padding: var(--space-8) var(--space-8);
-    border-top: 3px solid rgba(48, 92, 67, 0.4);
-    border-radius: var(--radius-xl);
-    background: #ffffff;
-    box-shadow: 0 14px 30px rgba(28, 40, 34, 0.08);
-    text-align: left;
-  }
-
-  .sticker-rail__eyebrow {
-    margin: 0 0 var(--space-3);
-    color: rgba(38, 80, 58, 0.9);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.7rem;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .sticker-rail__title {
-    margin: 0;
-    font-size: clamp(1.05rem, 2.2vw, 1.5rem);
-    line-height: 1.4;
-    color: rgba(18, 34, 28, 0.96);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .sticker-rail__copy {
-    margin: var(--space-4) 0 0;
-    max-width: 700px;
-    color: var(--color-text-muted);
-    font-size: 0.98rem;
-    line-height: 1.65;
-  }
-
-  .sticker-rail__cta {
-    margin-top: var(--space-5);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 20px;
-    border-radius: var(--radius-full);
-    text-decoration: none;
-    font-weight: var(--font-weight-semibold);
-    font-size: 0.92rem;
-    color: var(--color-surface);
-    background: linear-gradient(180deg, var(--color-accent), #2f6f4f);
-    box-shadow: 0 8px 20px rgba(47, 111, 79, 0.3);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .sticker-rail__cta:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(47, 111, 79, 0.35);
-    color: var(--color-surface);
-  }
-  
-  .languages-preview__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-10);
-    flex-wrap: wrap;
-    gap: var(--space-4);
-  }
-  
-  .languages-preview__title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin: 0;
-  }
-  
-  .languages-preview__link {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-accent);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-  
-  .languages-preview__link:hover {
-    color: var(--color-accent-hover);
-  }
-  
-  .languages-preview__grid {
+  .trust {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-8) clamp(32px, 6vw, 96px);
+    align-items: end;
+  }
+
+  .trust__copy {
+    font-size: var(--font-size-lg);
+    color: var(--color-text);
+    max-width: 38rem;
+  }
+
+  .section--pricing {
+    background: var(--cat-food);
+  }
+
+  .request {
+    margin-top: var(--space-8);
+  }
+
+  .request a {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .section--notify {
+    background: var(--color-accent-soft);
+  }
+
+  .notify {
+    display: grid;
+    justify-items: start;
     gap: var(--space-6);
   }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .hero {
-      min-height: 60vh;
-      padding: var(--space-16) 0;
-    }
 
-    .sticker-rail {
-      padding-bottom: var(--space-9);
-    }
+  .notify :global(.newsletter) {
+    width: min(100%, 36rem);
+  }
 
-    .sticker-rail__pitch {
-      margin-top: var(--space-6);
-      padding: var(--space-6) var(--space-5);
-      border-radius: var(--radius-xl);
-    }
-    
-    .hero__headline {
-      font-size: var(--font-size-3xl);
-    }
-    
-    .hero__subheadline {
-      font-size: var(--font-size-lg);
-    }
-    
-    .languages-preview__header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .pathways__grid {
+  @media (max-width: 860px) {
+    .hero__grid,
+    .split,
+    .trust {
       grid-template-columns: 1fr;
+    }
+
+    .hero__visual {
+      order: 2;
+    }
+
+    .hero :global(.phone) {
+      width: min(100%, 280px);
     }
   }
 </style>

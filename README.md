@@ -1,6 +1,22 @@
-# First 100 Landing Site
+# First100 Landing Site
 
-A premium, static-first website for First 100 — a portfolio of paid, no-ads, toddler-friendly language apps.
+The website for First100 (www.first100.org): First100: World Languages (17 languages in one app)
+and the languages with their own app, starting with Somali. Read `docs/DESIGN.md` before changing a page.
+
+## When First100 World goes live
+
+Put its App Store ID in `WORLD.appStoreId` in `src/data/apps.ts` and push to `main`. Every World
+language page, the homepage and the languages page switch from "Coming soon" to Apple's badge.
+Prices and future packs live in `PRICING` in the same file; shared FAQ answers in `src/data/faq.ts`.
+
+## Keeping the site in step with the app
+
+`node scripts/sync-app-assets.mjs` copies the app's pictures, the seven families, the demo word
+clips and every language's word list from the sibling `first100world` and `abdi-first100somali`
+checkouts into `public/app/` and `src/data/app-words.json`. Run it after the app's words or art change.
+
+The blog reads posts from Supabase at build time; for a local build put `PUBLIC_SUPABASE_URL` and
+`PUBLIC_SUPABASE_ANON_KEY` (publishable) in `.env`.
 
 ## Quick Start
 

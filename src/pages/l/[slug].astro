@@ -2,444 +2,338 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import StoreButtons from '../../components/StoreButtons.astro';
-import WordDemo from '../../components/WordDemo.astro';
+import PhoneFrame from '../../components/PhoneFrame.astro';
+import AppStoreBadge from '../../components/AppStoreBadge.astro';
+import HearIt from '../../components/HearIt.astro';
+import Pricing from '../../components/Pricing.astro';
+import Faq from '../../components/Faq.astro';
+import NewsletterSignup from '../../components/NewsletterSignup.astro';
 import { withBase } from '../../utils/withBase';
-import languageData from '../../data/languages.json';
+import { LANGUAGES, WORLD_LANGUAGES, scriptClass, type Language } from '../../lib/catalog';
+import { APPS, PRICING, WORLD } from '../../data/apps';
+import { FAQ } from '../../data/faq';
+import appWords from '../../data/app-words.json';
 
 export function getStaticPaths() {
-  return languageData.languages.map(lang => ({
-    params: { slug: lang.slug },
-    props: { language: lang }
-  }));
+  return LANGUAGES.map((language) => ({ params: { slug: language.slug }, props: { language } }));
 }
 
 interface Props {
-  language: typeof languageData.languages[0];
+  language: Language;
 }
 
 const { language } = Astro.props;
-const { name, nativeName, status, appStore, playStore, wordCount } = language;
+const { name, nativeName, code, app, status, appStore, appName } = language;
+const script = scriptClass(code);
+const words = (appWords.words as Record<string, { english: string; native: string; imageName: string | null; color: string | null; category: string }[]>)[code] ?? [];
+const inWorld = app === 'world';
+const hasApp = app !== 'standalone';
+const appStoreId = app === 'standalone' ? null : APPS[app].appStoreId;
 
-// FAQ items (shared across all languages)
-const faqItems = [
-  {
-    question: 'What age is this app designed for?',
-    answer: 'First 100 is designed for toddlers ages 1-4. The simple tap-and-listen interaction is perfect for developing language skills.'
-  },
-  {
-    question: 'Does it work offline?',
-    answer: 'Yes! All audio is included in the app. Once downloaded, no internet connection is needed.'
-  },
-  {
-    question: 'Are there any ads or in-app purchases?',
-    answer: 'No. First 100 is a one-time purchase with no ads, subscriptions, or hidden costs.'
-  },
-  {
-    question: 'Who creates the audio?',
-    answer: 'All words are recorded by native speakers to ensure authentic pronunciation.'
-  }
-];
+// The app's twelve categories, in the order the app shows them.
+const CATEGORY_NAMES: Record<string, string> = {
+  Animals: 'Animals', Colors: 'Colors', Family: 'Family', Food_Drink: 'Food & Drink', Body_Parts: 'Body Parts',
+  Numbers: 'Numbers', Actions_Verbs: 'Actions', Nature_Outside: 'Nature', Feelings_Words: 'Feelings',
+  Core_Responses: 'Yes, no and more', Objects_Home: 'Around the house', Utility_Daily: 'Every day',
+};
+const groups = Object.keys(CATEGORY_NAMES)
+  .map((cat) => ({ name: CATEGORY_NAMES[cat], words: words.filter((w) => w.category === cat) }))
+  .filter((g) => g.words.length);
+const showEnglish = code !== 'en';
 
-// Get related languages (same first letter or nearby in alphabet)
-const relatedLanguages = languageData.languages
-  .filter(l => l.slug !== language.slug)
-  .slice(0, 4);
-const languagesPath = withBase('/languages');
+const screen = inWorld ? withBase(`/app/screens/${code}.webp`) : code === 'so' ? withBase('/screenshots/app-screen-1.png') : null;
+// The shared answers describe First100 World; other apps get only the ones true for every app.
+const faq = inWorld ? FAQ : FAQ.filter((q) => /Who is First100 for|need the internet|Android/.test(q.question));
+const related = WORLD_LANGUAGES.filter((l) => l.slug !== language.slug);
+
+const lede = inWorld
+  ? `${name} is one of ${WORLD_LANGUAGES.length} languages in ${WORLD.name}: ${PRICING.words} first words in ${PRICING.categories} categories, each said in ${name}${showEnglish ? ' with its English beside it' : ''}.`
+  : hasApp
+    ? `${appName}: ${PRICING.words} first words in ${name}, in ${PRICING.categories} categories, for toddlers and the grown-ups beside them.`
+    : `${name} is getting its own First100 app. Leave your email and we'll write once, when it's ready.`;
+const title = `First words in ${name}`;
+const description = inWorld
+  ? `${PRICING.words} first words in ${name} for toddlers. Tap a picture, hear the word. Part of ${WORLD.name}. No ads, no subscriptions.`
+  : `${PRICING.words} first words in ${name} for toddlers. Tap a picture, hear the word. No ads.`;
 ---
 
-<BaseLayout 
-  title={`First Words in ${name}`}
-  description={`Learn ${wordCount} first words in ${name}. Perfect for toddlers. Tap a picture, hear the word. No ads.`}
->
+<BaseLayout title={title} description={description} appStoreId={appStoreId}>
   <Header slot="header" currentPath={`/l/${language.slug}`} />
-  
-  <article class="language-detail">
-    <div class="container">
-      <!-- Breadcrumb -->
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href={languagesPath} class="breadcrumb__link">Languages</a>
-        <span class="breadcrumb__separator" aria-hidden="true">/</span>
-        <span class="breadcrumb__current">{name}</span>
-      </nav>
-      
-      <!-- Hero Section -->
-      <header class="language-hero">
-        <div class="language-hero__content">
-          <h1 class="language-hero__title">
-            First Words in {name}
-          </h1>
-          {nativeName && nativeName !== name && (
-            <p class="language-hero__native">{nativeName}</p>
-          )}
-          <p class="language-hero__description">
-            Tap. Hear. Repeat. {wordCount} essential words for your toddler.
-          </p>
-          <div class="language-hero__actions">
-            <StoreButtons 
-              appStore={appStore} 
-              playStore={playStore} 
-              status={status}
-              size="large"
-            />
-          </div>
-        </div>
-        
-        <div class="language-hero__visual">
-          <!-- Screenshot placeholder -->
-          <div class="screenshot-strip">
-            <img class="screenshot screenshot--1" src={withBase('/screenshots/app-screen-1.png')} alt={`First 100 ${name} app screenshot one`} width="180" height="360" loading="lazy" decoding="async" />
-            <img class="screenshot screenshot--2" src={withBase('/screenshots/app-screen-2.png')} alt={`First 100 ${name} app screenshot two`} width="180" height="360" loading="lazy" decoding="async" />
-            <img class="screenshot screenshot--3" src={withBase('/screenshots/app-screen-3.png')} alt={`First 100 ${name} app screenshot three`} width="180" height="360" loading="lazy" decoding="async" />
-          </div>
-        </div>
-      </header>
 
-      <WordDemo languageSlug={language.slug} languageName={name} nativeName={nativeName || ''} />
-      
-      <!-- Features -->
-      <section class="features">
-        <div class="feature">
-          <div class="feature__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            </svg>
-          </div>
-          <h3 class="feature__title">Native Audio</h3>
-          <p class="feature__description">Every word spoken by a native {name} speaker.</p>
+  <section class="lhero">
+    <div class="container lhero__grid">
+      <div class="lhero__copy">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href={withBase('/languages')}>Languages</a>
+          <span aria-hidden="true">/</span>
+          <span>{name}</span>
+        </nav>
+        <p class="eyebrow">{hasApp ? appName : 'Its own app, coming'}</p>
+        <h1 class="lhero__title">First words in {name}</h1>
+        {nativeName !== name && <p class:list={['lhero__native', script]} lang={code}>{nativeName}</p>}
+        <p class="lhero__lede">{lede}</p>
+        {hasApp ? (
+          <AppStoreBadge href={appStore} appName={appName ?? name} size="large" notifyHref="#notify" cta={`language-${language.slug}`} />
+        ) : (
+          <a class="lhero__notify" href="#notify">Tell me when it's ready →</a>
+        )}
+        {inWorld && <p class="lhero__promise">No ads. No subscriptions. {PRICING.freeCategories} categories free.</p>}
+      </div>
+      {screen && (
+        <div class="lhero__visual">
+          <PhoneFrame label={`The ${name} app`}>
+            <img src={screen} alt={`First100 in ${name}: the Animals cards`} width="600" height="1300" loading="eager" decoding="async" />
+          </PhoneFrame>
         </div>
-        
-        <div class="feature">
-          <div class="feature__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-          </div>
-          <h3 class="feature__title">{wordCount} Words</h3>
-          <p class="feature__description">Essential first words organized by category.</p>
-        </div>
-        
-        <div class="feature">
-          <div class="feature__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </div>
-          <h3 class="feature__title">Learn Anytime</h3>
-          <p class="feature__description">Works offline. No internet required.</p>
-        </div>
-      </section>
-      
-      <!-- FAQ Section -->
-      <section class="faq">
-        <h2 class="faq__title">Frequently Asked Questions</h2>
-        <div class="faq__list">
-          {faqItems.map((item) => (
-            <details class="faq__item">
-              <summary class="faq__question">{item.question}</summary>
-              <p class="faq__answer">{item.answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-      
-      <!-- Related Languages -->
-      <section class="related">
-        <h2 class="related__title">Explore More Languages</h2>
-        <div class="related__grid">
-          {relatedLanguages.map((lang) => (
-            <a href={withBase(`/l/${lang.slug}`)} class="related__item">
-              <span class="related__name">{lang.name}</span>
-              {lang.nativeName && lang.nativeName !== lang.name && (
-                <span class="related__native">{lang.nativeName}</span>
-              )}
-            </a>
-          ))}
-        </div>
-        <a href={languagesPath} class="related__all">View all languages →</a>
-      </section>
+      )}
     </div>
-  </article>
-  
+  </section>
+
+  {words.length > 0 && (
+    <section class="section section--hear" aria-labelledby="hear-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Try it here</p>
+          <h2 id="hear-title" class="section__title">Hear it in {name}.</h2>
+          <p class="section__lede">The app's own pictures and voice. Tap a card.</p>
+        </div>
+        <HearIt start={code} pick={false} />
+      </div>
+    </section>
+  )}
+
+  {groups.length > 0 && (
+    <section class="section" aria-labelledby="words-title">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">All {words.length} words</p>
+          <h2 id="words-title" class="section__title">The first {words.length} words in {name}</h2>
+        </div>
+        <div class="words">
+          {groups.map((g) => (
+            <section class="words__group">
+              <h3 class="words__cat">{g.name}</h3>
+              <ul class="words__list">
+                {g.words.map((w) => (
+                  <li>
+                    <span class:list={['words__native', script]} lang={code}>{w.native}</span>
+                    {showEnglish && <span class="words__english">{w.english}</span>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {inWorld && (
+    <section class="section section--pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 id="pricing-title" class="section__title">Try it free. Unlock once.</h2>
+        </div>
+        <Pricing />
+      </div>
+    </section>
+  )}
+
+  <section class="section" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section__head">
+        <h2 id="faq-title" class="section__title">Questions parents ask</h2>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </section>
+
+  {status !== 'available' && (
+    <section class="section section--notify" id="notify" aria-labelledby="notify-title">
+      <div class="container notify">
+        <NewsletterSignup source="launch" language={language.slug} title={`Hear ${name} first`} body={`One email when ${hasApp ? appName : `the ${name} app`} is on the App Store. Nothing else unless you ask.`} button="Tell me" />
+      </div>
+    </section>
+  )}
+
+  <section class="section section--related" aria-labelledby="related-title">
+    <div class="container">
+      <h2 id="related-title" class="related__title">Also in {WORLD.name}</h2>
+      <ul class="related">
+        {related.map((l) => (
+          <li><a href={withBase(`/l/${l.slug}`)}><span class={scriptClass(l.code)}>{l.nativeName}</span></a></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
   <Footer slot="footer" />
 </BaseLayout>
 
 <style>
-  .language-detail {
-    padding: var(--space-8) 0 var(--space-20);
+  .lhero {
+    padding-block: clamp(24px, 4vw, 48px) clamp(56px, 8vw, 104px);
+    background: linear-gradient(180deg, var(--cat-animals), var(--color-bg) 85%);
   }
-  
-  /* Breadcrumb */
-  .breadcrumb {
-    display: flex;
+
+  .lhero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: clamp(32px, 6vw, 96px);
     align-items: center;
+  }
+
+  .lhero__copy {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-4);
+  }
+
+  .crumbs {
+    display: flex;
     gap: var(--space-2);
     font-size: var(--font-size-sm);
-    margin-bottom: var(--space-8);
-  }
-  
-  .breadcrumb__link {
-    color: var(--color-text-muted);
-    text-decoration: none;
-  }
-  
-  .breadcrumb__link:hover {
-    color: var(--color-accent);
-  }
-  
-  .breadcrumb__separator {
     color: var(--color-text-soft);
-  }
-  
-  .breadcrumb__current {
-    color: var(--color-text);
-    font-weight: var(--font-weight-medium);
-  }
-  
-  /* Hero */
-  .language-hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-16);
-    align-items: center;
-    margin-bottom: var(--space-20);
-  }
-  
-  .language-hero__title {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-2);
-  }
-  
-  .language-hero__native {
-    font-size: var(--font-size-xl);
-    color: var(--color-text-muted);
     margin-bottom: var(--space-4);
   }
-  
-  .language-hero__description {
-    font-size: var(--font-size-lg);
+
+  .crumbs a {
     color: var(--color-text-muted);
-    margin-bottom: var(--space-8);
-    max-width: 400px;
   }
-  
-  .screenshot-strip {
-    display: flex;
-    gap: var(--space-4);
-    justify-content: center;
+
+  .lhero__title {
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    overflow-wrap: normal;
   }
-  
-  .screenshot {
-    width: 150px;
-    height: 300px;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    object-fit: cover;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
-  }
-  
-  .screenshot--1 { transform: rotate(-5deg) translateY(10px); }
-  .screenshot--2 { transform: translateY(-10px); z-index: 1; }
-  .screenshot--3 { transform: rotate(5deg) translateY(10px); }
-  
-  /* Features */
-  .features {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
-    padding: var(--space-12) 0;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: var(--space-16);
-  }
-  
-  .feature {
-    text-align: center;
-  }
-  
-  .feature__icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-accent-soft);
-    border-radius: var(--radius-lg);
+
+  .lhero__native {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: var(--font-weight-bold);
     color: var(--color-accent);
-    margin: 0 auto var(--space-4);
+    line-height: 1.3;
   }
-  
-  .feature__icon svg {
-    width: 24px;
-    height: 24px;
+
+  .lhero__native.script-urdu {
+    line-height: 2;
   }
-  
-  .feature__title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+
+  .lhero__lede {
+    font-size: var(--font-size-lg);
+    max-width: 36rem;
     margin-bottom: var(--space-2);
   }
-  
-  .feature__description {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin: 0;
-  }
-  
-  /* FAQ */
-  .faq {
-    margin-bottom: var(--space-16);
-  }
-  
-  .faq__title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
+
+  .lhero__promise {
+    font-weight: var(--font-weight-bold);
     color: var(--color-text);
+  }
+
+  .lhero__notify {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+  }
+
+  .lhero__visual {
+    display: grid;
+    justify-items: center;
+  }
+
+  .section--hear {
+    background: var(--color-surface);
+  }
+
+  .words {
+    columns: 3 16rem;
+    column-gap: var(--space-10);
+  }
+
+  .words__group {
+    break-inside: avoid;
     margin-bottom: var(--space-8);
   }
-  
-  .faq__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    max-width: 700px;
+
+  .words__cat {
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--space-3);
   }
-  
-  .faq__item {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-  }
-  
-  .faq__question {
-    padding: var(--space-4) var(--space-5);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text);
-    cursor: pointer;
+
+  .words__list {
     list-style: none;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .words__list li {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-3);
   }
-  
-  .faq__question::-webkit-details-marker {
-    display: none;
+
+  .words__native {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-md);
   }
-  
-  .faq__question::after {
-    content: '+';
-    font-size: var(--font-size-lg);
-    color: var(--color-text-muted);
-    transition: transform var(--transition-fast);
+
+  .words__native.script-urdu {
+    line-height: 1.9;
   }
-  
-  .faq__item[open] .faq__question::after {
-    transform: rotate(45deg);
+
+  .words__english {
+    color: var(--color-text-soft);
+    font-size: var(--font-size-sm);
   }
-  
-  .faq__answer {
-    padding: 0 var(--space-5) var(--space-4);
-    color: var(--color-text-muted);
-    line-height: var(--line-height-relaxed);
-    margin: 0;
+
+  .section--pricing {
+    background: var(--cat-food);
   }
-  
-  /* Related */
+
+  .section--notify {
+    background: var(--color-accent-soft);
+  }
+
+  .notify :global(.newsletter) {
+    width: min(100%, 36rem);
+  }
+
   .related__title {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-5);
   }
-  
-  .related__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: var(--space-4);
-    margin-bottom: var(--space-6);
-  }
-  
-  .related__item {
+
+  .related {
+    list-style: none;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .related a {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-  
-  .related__item:hover {
-    border-color: var(--color-accent-soft);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .related__name {
-    font-weight: var(--font-weight-medium);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border);
     color: var(--color-text);
   }
-  
-  .related__native {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
+
+  .related .script-urdu {
+    line-height: 1.4;
   }
-  
-  .related__all {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-  
-  .related__all:hover {
-    color: var(--color-accent-hover);
-  }
-  
-  /* Responsive */
-  @media (max-width: 900px) {
-    .language-hero {
+
+  @media (max-width: 860px) {
+    .lhero__grid {
       grid-template-columns: 1fr;
-      gap: var(--space-10);
     }
-    
-    .language-hero__content {
-      text-align: center;
-    }
-    
-    .language-hero__description {
-      max-width: none;
-    }
-    
-    .language-hero__actions {
-      display: flex;
-      justify-content: center;
-    }
-    
-    .features {
-      grid-template-columns: 1fr;
-      gap: var(--space-6);
-    }
-  }
-  
-  @media (max-width: 600px) {
-    .screenshot-strip {
-      display: none;
-    }
-    
-    .language-hero__title {
-      font-size: var(--font-size-3xl);
+
+    .lhero :global(.phone) {
+      width: min(100%, 260px);
     }
   }
 </style>

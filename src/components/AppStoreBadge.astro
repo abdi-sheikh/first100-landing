@@ -1,0 +1,84 @@
+---
+// The one way the site sends people to the App Store: Apple's official badge when the app is
+// live, and a plain "coming soon" label when it isn't (never a button that goes nowhere).
+// Apple's logo appears only inside Apple's own badge artwork, as its guidelines require.
+import { withBase } from '../utils/withBase';
+
+interface Props {
+  href: string | null;
+  appName: string;
+  size?: 'medium' | 'large';
+  /** Where a "tell me when it's out" link should go while the app isn't live. */
+  notifyHref?: string | null;
+  cta?: string;
+}
+
+const { href, appName, size = 'medium', notifyHref = null, cta = 'app-store' } = Astro.props;
+const badge = withBase('/app/badge/app-store.svg');
+---
+
+{href ? (
+  <a class:list={['badge', `badge--${size}`]} href={href} target="_blank" rel="noopener" data-cta={cta} aria-label={`Download ${appName} on the App Store`}>
+    <img src={badge} alt="" width="120" height="40" />
+  </a>
+) : (
+  <div class:list={['soon', `soon--${size}`]}>
+    <span class="soon__label">
+      Coming soon to the App Store
+    </span>
+    {notifyHref && <a class="soon__notify" href={notifyHref}>Tell me when it's out</a>}
+  </div>
+)}
+
+<style>
+  .badge {
+    display: inline-block;
+    border-radius: 10px;
+    transition: transform var(--transition-fast);
+  }
+
+  .badge:active {
+    transform: scale(0.97);
+  }
+
+  .badge img {
+    height: 48px;
+    width: auto;
+  }
+
+  .badge--large img {
+    height: 56px;
+  }
+
+  .soon {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+  }
+
+  .soon__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
+  }
+
+  .soon--large .soon__label {
+    padding: 15px 22px;
+    font-size: var(--font-size-base);
+  }
+
+
+  .soon__notify {
+    font-weight: var(--font-weight-bold);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

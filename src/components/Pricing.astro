@@ -1,0 +1,86 @@
+---
+// Prices come from data/apps.ts, so a new pack appears here once it is added there.
+import { PRICING } from '../data/apps';
+---
+
+<div class="pricing">
+  <ol class="pricing__tiers">
+    {PRICING.tiers.map((t) => (
+      <li class:list={['tier', { 'tier--highlight': t.highlight }]}>
+        <p class="tier__name">{t.name}</p>
+        <p class="tier__price">{t.price}</p>
+        <p class="tier__detail">{t.detail}</p>
+      </li>
+    ))}
+  </ol>
+  <p class="pricing__terms">
+    <strong>Pay once, keep it.</strong> No subscriptions, no ads, no accounts. Purchases go through Apple and
+    come back on your other devices with Restore purchases, in the app's grown-ups area.
+  </p>
+</div>
+
+<style>
+  .pricing {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .pricing__tiers {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.15fr;
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+
+  .tier {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-6);
+    border-radius: 24px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .tier--highlight {
+    background: var(--color-accent);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .tier--highlight :is(.tier__name, .tier__price, .tier__detail) {
+    color: var(--color-surface);
+  }
+
+  .tier__name {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  .tier__price {
+    font-size: 2.75rem;
+    line-height: 1;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.03em;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tier__detail {
+    font-size: var(--font-size-base);
+  }
+
+  .pricing__terms {
+    max-width: 44rem;
+  }
+
+  .pricing__terms strong {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 760px) {
+    .pricing__tiers {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

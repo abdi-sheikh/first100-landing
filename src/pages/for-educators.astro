@@ -3,206 +3,101 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { withBase } from '../utils/withBase';
+import { WORLD_LANGUAGES } from '../lib/catalog';
+import { WORLD } from '../data/apps';
 
 const contactEmail = 'hello@first100.app';
-const languagesPath = withBase('/languages');
+
+const fits = [
+  { title: 'A classroom with many home languages', body: `${WORLD_LANGUAGES.length} languages in one app, so each child can hear their own words, and their classmates can hear them too.` },
+  { title: 'Speech and language sessions', body: 'A full-screen view for one card at a time, fast switching between categories, and no purchase prompts in the middle of a session.' },
+  { title: 'Libraries and family programs', body: 'No accounts and no ads, and it works offline, so a shared tablet is ready for the next family.' },
+];
 ---
 
-<BaseLayout
-  title="For Educators"
-  description="School and program partnerships for First 100 language learning apps."
->
+<BaseLayout title="For educators" description={`First100 in classrooms, clinics and family programs: ${WORLD_LANGUAGES.length} languages in one app, no accounts, no ads, works offline.`}>
   <Header slot="header" currentPath="/for-educators" />
 
-  <article class="educators-page">
+  <section class="section edu">
     <div class="container">
-      <header class="educators-page__hero">
-        <p class="educators-page__eyebrow">For Schools and Programs</p>
-        <h1 class="educators-page__title">Home-language learning support for classrooms</h1>
-        <p class="educators-page__subtitle">
-          First 100 helps early-years teams support multilingual families with simple, ad-free language apps built for young children.
+      <div class="section__head">
+        <p class="eyebrow">For educators and clinicians</p>
+        <h1 class="section__title">One app for the languages in your room.</h1>
+        <p class="section__lede">
+          {WORLD.name} was built for toddlers and the adults beside them. It fits a few places beyond home especially well.
         </p>
-      </header>
-
-      <section class="educators-offers" aria-label="Educator offerings">
-        <article class="educators-offers__card">
-          <p class="educators-offers__label">Pricing</p>
-          <h2>Enterprise and district plans</h2>
-          <p>Pricing is tailored by classroom count, language coverage, and rollout scope.</p>
-          <ul>
-            <li>Flexible purchasing for schools and organizations</li>
-            <li>Multi-classroom language deployment support</li>
-            <li>Pilot-to-scale partnership options</li>
-          </ul>
-        </article>
-
-        <article class="educators-offers__card">
-          <p class="educators-offers__label">Implementation</p>
-          <h2>Simple rollout for teaching teams</h2>
-          <p>We support practical onboarding so educators can start quickly and stay consistent.</p>
-          <ul>
-            <li>Guidance for device setup and account planning</li>
-            <li>Category sequencing recommendations for early learners</li>
-            <li>Language-priority planning based on student communities</li>
-          </ul>
-        </article>
-
-        <article class="educators-offers__card">
-          <p class="educators-offers__label">Outcomes</p>
-          <h2>Built for family connection</h2>
-          <p>Use familiar home-language vocabulary to strengthen parent-child communication and confidence.</p>
-          <ul>
-            <li>Native-speaker pronunciation across word sets</li>
-            <li>Toddler-friendly interaction model for independent use</li>
-            <li>No ads or distractions in classroom use</li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="educators-contact" aria-label="Contact enterprise team">
-        <h2>Talk to our partnerships team</h2>
-        <p>
-          Share your program size, target languages, and timeline. We will recommend a rollout and pricing path that fits your organization.
-        </p>
-        <div class="educators-contact__actions">
-          <a class="educators-contact__cta-primary" href={`mailto:${contactEmail}?subject=First%20100%20School%20Partnership`}>Contact enterprise team</a>
-          <a class="educators-contact__cta-secondary" href={languagesPath}>View current language catalog</a>
-        </div>
-      </section>
+      </div>
+      <ul class="fits">
+        {fits.map((f) => (
+          <li>
+            <h2>{f.title}</h2>
+            <p>{f.body}</p>
+          </li>
+        ))}
+      </ul>
     </div>
-  </article>
+  </section>
+
+  <section class="section section--contact" aria-labelledby="contact-title">
+    <div class="container contact">
+      <h2 id="contact-title" class="section__title">Using First100 with a group?</h2>
+      <p class="section__lede">
+        Tell us about your program: how many children, which languages, and what you're hoping for. We read every message.
+      </p>
+      <div class="contact__actions">
+        <a class="contact__primary" href={`mailto:${contactEmail}?subject=First100%20for%20our%20program`}>Email us</a>
+        <a href={withBase('/languages')}>See the languages →</a>
+      </div>
+    </div>
+  </section>
 
   <Footer slot="footer" />
 </BaseLayout>
 
 <style>
-  .educators-page {
-    padding: var(--space-12) 0 var(--space-20);
+  .edu {
+    background: linear-gradient(180deg, var(--cat-actions), var(--color-bg) 70%);
   }
 
-  .educators-page__hero {
-    max-width: 800px;
-    text-align: center;
-    margin: 0 auto var(--space-10);
-  }
-
-  .educators-page__eyebrow {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.09em;
-    font-size: 0.72rem;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .educators-page__title {
-    margin-top: var(--space-3);
-    font-size: clamp(2rem, 3.1vw, 3rem);
-  }
-
-  .educators-page__subtitle {
-    margin-top: var(--space-4);
-    font-size: var(--font-size-md);
-    line-height: 1.7;
-  }
-
-  .educators-offers {
+  .fits {
+    list-style: none;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-8) var(--space-10);
+  }
+
+  .fits h2 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  .section--contact {
+    background: var(--color-accent-soft);
+  }
+
+  .contact {
+    display: grid;
     gap: var(--space-5);
+    justify-items: start;
   }
 
-  .educators-offers__card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .educators-offers__label {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.72rem;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .educators-offers__card h2 {
-    margin: var(--space-2) 0 0;
-    font-size: var(--font-size-xl);
-    line-height: 1.35;
-  }
-
-  .educators-offers__card p {
-    margin-top: var(--space-3);
-    line-height: 1.65;
-  }
-
-  .educators-offers__card ul {
-    margin: var(--space-4) 0 0;
-    padding-left: var(--space-5);
-    display: grid;
-    gap: var(--space-2);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    line-height: 1.6;
-  }
-
-  .educators-contact {
-    margin-top: var(--space-10);
-    text-align: center;
-    padding: var(--space-10) var(--space-7);
-    border-radius: var(--radius-xl);
-    background: linear-gradient(180deg, rgba(232, 240, 234, 0.62), #ffffff);
-    border: 1px solid rgba(74, 124, 89, 0.32);
-  }
-
-  .educators-contact h2 {
-    margin: 0;
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
-  }
-
-  .educators-contact p {
-    margin: var(--space-4) auto 0;
-    max-width: 700px;
-    line-height: 1.7;
-  }
-
-  .educators-contact__actions {
-    margin-top: var(--space-6);
+  .contact__actions {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .educators-contact__cta-primary,
-  .educators-contact__cta-secondary {
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    text-decoration: none;
+    gap: var(--space-6);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .contact__primary {
+    padding: 12px 22px;
     border-radius: var(--radius-full);
-    padding: 10px 18px;
-    font-weight: var(--font-weight-semibold);
-  }
-
-  .educators-contact__cta-primary {
-    color: var(--color-surface);
     background: var(--color-accent);
+    color: var(--color-surface);
   }
 
-  .educators-contact__cta-secondary {
-    color: var(--color-text);
-    background: #ffffff;
-    border: 1px solid var(--color-border);
-  }
-
-  @media (max-width: 900px) {
-    .educators-offers {
-      grid-template-columns: 1fr;
-    }
+  .contact__primary:hover {
+    background: var(--color-accent-hover);
+    color: var(--color-surface);
   }
 </style>

@@ -21,7 +21,7 @@ const categoryOptions = [
 
 <BaseLayout
   title="Request a Language"
-  description="Request a new language or language pair for First 100."
+  description="Request a new language or language pair for First100."
 >
   <Header slot="header" currentPath="/request-language" />
 
@@ -217,7 +217,7 @@ const categoryOptions = [
         String(formData.get('notes') || 'None')
       ].join('\n');
 
-      const subject = encodeURIComponent('Language request: First 100');
+      const subject = encodeURIComponent('Language request: First100');
       const encodedBody = encodeURIComponent(body);
       window.location.href = `mailto:hello@first100.app?subject=${subject}&body=${encodedBody}`;
 

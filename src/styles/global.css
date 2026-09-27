@@ -1,4 +1,4 @@
-/* First 100 — Global Styles & Design Tokens */
+/* First100 — global styles and design tokens. See docs/DESIGN.md before changing anything here. */
 
 /* ========================================
    Reset & Base
@@ -20,12 +20,23 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
   line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-bg);
-  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
 }
+
+/* Words in their own scripts. Andika covers Latin, Cyrillic and Vietnamese; every other script
+   uses the reader's system face for it, which is the right one. Nastaliq needs extra room. */
+.script-cjk { font-family: 'PingFang SC', 'Hiragino Sans', 'Apple SD Gothic Neo', 'Noto Sans CJK SC', 'Noto Sans JP', 'Noto Sans KR', 'Microsoft YaHei', sans-serif; }
+.script-deva { font-family: 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif; }
+.script-beng { font-family: 'Kohinoor Bangla', 'Noto Sans Bengali', 'Nirmala UI', sans-serif; }
+.script-thai { font-family: 'Thonburi', 'Noto Sans Thai Looped', 'Noto Sans Thai', 'Leelawadee UI', sans-serif; }
+.script-urdu { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif; line-height: 2.1; }
+.script-arab { font-family: 'Geeza Pro', 'Noto Naskh Arabic', 'Segoe UI', serif; }
+.script-ethi { font-family: 'Kefa', 'Noto Sans Ethiopic', 'Nyala', sans-serif; }
 
 img, picture, video, canvas, svg {
   display: block;
@@ -66,9 +77,16 @@ p, h1, h2, h3, h4, h5, h6 {
   --color-coming-soon: #C9A962;
   --color-coming-soon-bg: #FBF7ED;
   
-  /* Platform colors */
-  --color-ios: #007AFF;
-  --color-android: #34A853;
+  /* Category page colors, as in the app: tint for a page, chip for a mark */
+  --cat-animals: #FBF1E1;       --chip-animals: #E9B870;
+  --cat-family: #FDECE8;        --chip-family: #EBA08F;
+  --cat-food: #FDF4D9;          --chip-food: #E6C04F;
+  --cat-body: #E9F3F7;          --chip-body: #86BBD0;
+  --cat-actions: #E8F5EC;       --chip-actions: #84C199;
+  --cat-feelings: #FCEAF0;      --chip-feelings: #E597B2;
+  --cat-numbers: #ECEEFA;       --chip-numbers: #9AA3DC;
+
+  --font-body: 'Andika', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', sans-serif;
   
   /* Spacing — 4px base unit */
   --space-1: 4px;
@@ -96,9 +114,10 @@ p, h1, h2, h3, h4, h5, h6 {
   --font-size-4xl: 3rem;      /* 48px */
   --font-size-5xl: 3.5rem;    /* 56px */
   
+  /* Andika comes in two weights; medium and semibold map onto them. */
   --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 700;
   --font-weight-bold: 700;
   
   --line-height-tight: 1.2;
@@ -117,16 +136,17 @@ p, h1, h2, h3, h4, h5, h6 {
   --radius-2xl: 32px;
   --radius-full: 9999px;
   
-  /* Shadows — Subtle, warm-toned */
-  --shadow-sm: 0 1px 2px rgba(45, 42, 38, 0.04);
-  --shadow-md: 0 4px 12px rgba(45, 42, 38, 0.06);
-  --shadow-lg: 0 8px 24px rgba(45, 42, 38, 0.08);
-  --shadow-xl: 0 16px 48px rgba(45, 42, 38, 0.1);
+  /* Shadows — two layers, warm-toned, as in the app */
+  --shadow-sm: 0 1px 2px rgba(45, 42, 38, 0.06);
+  --shadow-md: 0 1px 2px rgba(45, 42, 38, 0.06), 0 6px 16px rgba(45, 42, 38, 0.06);
+  --shadow-lg: 0 2px 4px rgba(45, 42, 38, 0.05), 0 14px 32px rgba(45, 42, 38, 0.08);
+  --shadow-xl: 0 4px 8px rgba(45, 42, 38, 0.05), 0 28px 64px rgba(90, 64, 30, 0.14);
   
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
-  --transition-slow: 400ms ease;
+  /* Transitions: ease-out for anything that appears or responds */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --transition-fast: 150ms var(--ease-out);
+  --transition-normal: 250ms var(--ease-out);
+  --transition-slow: 400ms var(--ease-out);
   
   /* Layout */
   --max-width-content: 1200px;
@@ -139,7 +159,8 @@ p, h1, h2, h3, h4, h5, h6 {
    ======================================== */
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
+  text-wrap: balance;
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   color: var(--color-text);
@@ -185,6 +206,43 @@ a:hover {
   max-width: var(--max-width-content);
   margin-inline: auto;
   padding-inline: var(--space-6);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* A small uppercase label above a heading. */
+.eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.section {
+  padding-block: clamp(64px, 10vw, 128px);
+}
+
+.section__head {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 44rem;
+  margin-bottom: var(--space-12);
+}
+
+.section__title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.section__lede {
+  font-size: var(--font-size-lg);
+  max-width: 40rem;
 }
 
 .container--narrow {

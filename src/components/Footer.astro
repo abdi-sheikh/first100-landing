@@ -6,12 +6,11 @@ const logoPath = withBase('/brand/logo-mark.png');
 
 const links = [
   { href: withBase('/languages'), label: 'Languages' },
-  { href: withBase('/how-it-works'), label: 'How It Works' },
-  { href: withBase('/for-parents'), label: 'For Parents' },
-  { href: withBase('/for-educators'), label: 'For Educators' },
+  { href: withBase('/how-it-works'), label: 'How it works' },
+  { href: withBase('/for-parents'), label: 'For parents' },
+  { href: withBase('/for-educators'), label: 'For educators' },
   { href: withBase('/support'), label: 'Support' },
-  { href: withBase('/brand'), label: 'Brand' },
-  { href: withBase('/request-language'), label: 'Request a Language' },
+  { href: withBase('/request-language'), label: 'Request a language' },
   { href: withBase('/privacy'), label: 'Privacy' },
   { href: withBase('/terms'), label: 'Terms' }
 ];
@@ -20,10 +19,10 @@ const links = [
 <footer class="footer">
   <div class="footer__container container">
     <div class="footer__brand">
-      <img src={logoPath} alt="First 100 logo" width="36" height="36" class="footer__logo-mark" loading="lazy" decoding="async" />
+      <img src={logoPath} alt="" width="36" height="36" class="footer__logo-mark" loading="lazy" decoding="async" />
       <div>
-        <p class="footer__logo">First 100</p>
-        <p class="footer__tagline">First words for kids in home languages.</p>
+        <p class="footer__logo">First<span class="footer__num">100</span></p>
+        <p class="footer__tagline">First words in your family's language. No ads, no subscriptions.</p>
       </div>
     </div>
 
@@ -34,11 +33,15 @@ const links = [
       <a href="mailto:hello@first100.app" class="footer__link">Contact</a>
     </nav>
 
-    <p class="footer__copyright">© {currentYear} First 100. All rights reserved.</p>
+    <p class="footer__copyright">© {currentYear} First100</p>
   </div>
 </footer>
 
 <style>
+  .footer__num {
+    color: var(--color-accent);
+  }
+
   .footer {
     background: var(--color-surface);
     border-top: 1px solid var(--color-border-soft);

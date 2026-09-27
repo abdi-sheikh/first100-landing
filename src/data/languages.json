@@ -1,224 +1,220 @@
 {
   "languages": [
     {
-      "slug": "somali",
-      "name": "Somali",
-      "nativeName": "Soomaali",
-      "status": "available",
-      "appStore": "https://apps.apple.com/app/first-100-somali-words/id123456789",
-      "playStore": "https://play.google.com/store/apps/details?id=app.first100.somali",
-      "wordCount": 100,
-      "featured": true
+      "slug": "english",
+      "code": "en",
+      "name": "English",
+      "nativeName": "English",
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
     },
     {
       "slug": "spanish",
+      "code": "es",
       "name": "Spanish",
       "nativeName": "Español",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": true
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
     },
     {
       "slug": "french",
+      "code": "fr",
       "name": "French",
       "nativeName": "Français",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": true
-    },
-    {
-      "slug": "mandarin",
-      "name": "Mandarin Chinese",
-      "nativeName": "普通话",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": true
-    },
-    {
-      "slug": "arabic",
-      "name": "Arabic",
-      "nativeName": "العربية",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": true
-    },
-    {
-      "slug": "hindi",
-      "name": "Hindi",
-      "nativeName": "हिन्दी",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": true
-    },
-    {
-      "slug": "portuguese",
-      "name": "Portuguese",
-      "nativeName": "Português",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "russian",
-      "name": "Russian",
-      "nativeName": "Русский",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "japanese",
-      "name": "Japanese",
-      "nativeName": "日本語",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
     },
     {
       "slug": "german",
+      "code": "de",
       "name": "German",
       "nativeName": "Deutsch",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "korean",
-      "name": "Korean",
-      "nativeName": "한국어",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "swahili",
-      "name": "Swahili",
-      "nativeName": "Kiswahili",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "vietnamese",
-      "name": "Vietnamese",
-      "nativeName": "Tiếng Việt",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
-    },
-    {
-      "slug": "turkish",
-      "name": "Turkish",
-      "nativeName": "Türkçe",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
     },
     {
       "slug": "italian",
+      "code": "it",
       "name": "Italian",
       "nativeName": "Italiano",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
     },
     {
-      "slug": "afrikaans",
-      "name": "Afrikaans",
-      "nativeName": "Afrikaans",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "slug": "portuguese",
+      "code": "pt",
+      "name": "Portuguese",
+      "nativeName": "Português",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
     },
     {
-      "slug": "amharic",
-      "name": "Amharic",
-      "nativeName": "አማርኛ",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "slug": "mandarin",
+      "code": "zh",
+      "name": "Mandarin Chinese",
+      "nativeName": "中文",
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
     },
     {
-      "slug": "bengali",
-      "name": "Bengali",
-      "nativeName": "বাংলা",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "slug": "japanese",
+      "code": "ja",
+      "name": "Japanese",
+      "nativeName": "日本語",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
     },
     {
-      "slug": "indonesian",
-      "name": "Indonesian",
-      "nativeName": "Bahasa Indonesia",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "slug": "korean",
+      "code": "ko",
+      "name": "Korean",
+      "nativeName": "한국어",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
     },
     {
-      "slug": "malay",
-      "name": "Malay",
-      "nativeName": "Bahasa Melayu",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "slug": "russian",
+      "code": "ru",
+      "name": "Russian",
+      "nativeName": "Русский",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "turkish",
+      "code": "tr",
+      "name": "Turkish",
+      "nativeName": "Türkçe",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "hindi",
+      "code": "hi",
+      "name": "Hindi",
+      "nativeName": "हिन्दी",
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
     },
     {
       "slug": "thai",
+      "code": "th",
       "name": "Thai",
       "nativeName": "ไทย",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "vietnamese",
+      "code": "vi",
+      "name": "Vietnamese",
+      "nativeName": "Tiếng Việt",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "indonesian",
+      "code": "id",
+      "name": "Indonesian",
+      "nativeName": "Bahasa Indonesia",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "malay",
+      "code": "ms",
+      "name": "Malay",
+      "nativeName": "Bahasa Melayu",
+      "app": "world",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "urdu",
+      "code": "ur",
+      "name": "Urdu",
+      "nativeName": "اردو",
+      "app": "world",
+      "featured": true,
+      "wordCount": 100
+    },
+    {
+      "slug": "somali",
+      "code": "so",
+      "name": "Somali",
+      "nativeName": "Soomaali",
+      "app": "somali",
+      "featured": true,
+      "wordCount": 100
+    },
+    {
+      "slug": "arabic",
+      "code": "ar",
+      "name": "Arabic",
+      "nativeName": "العربية",
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "swahili",
+      "code": "sw",
+      "name": "Swahili",
+      "nativeName": "Kiswahili",
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "amharic",
+      "code": "am",
+      "name": "Amharic",
+      "nativeName": "አማርኛ",
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
     },
     {
       "slug": "zulu",
+      "code": "zu",
       "name": "Zulu",
       "nativeName": "isiZulu",
-      "status": "coming-soon",
-      "appStore": null,
-      "playStore": null,
-      "wordCount": 100,
-      "featured": false
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "bengali",
+      "code": "bn",
+      "name": "Bengali",
+      "nativeName": "বাংলা",
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
+    },
+    {
+      "slug": "afrikaans",
+      "code": "af",
+      "name": "Afrikaans",
+      "nativeName": "Afrikaans",
+      "app": "standalone",
+      "featured": false,
+      "wordCount": 100
     }
   ]
 }

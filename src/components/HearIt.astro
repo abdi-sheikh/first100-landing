@@ -1,0 +1,215 @@
+---
+// "Tap a picture, hear the word", with the app's own pictures and audio. It behaves like a card
+// in the app: the word plays the moment a finger lands, the card pops, and an animal follows
+// its name with its sound and a wiggle.
+import appWords from '../data/app-words.json';
+import { LANGUAGES, scriptClass } from '../lib/catalog';
+import { withBase } from '../utils/withBase';
+
+interface Props {
+  /** Language to start on (a code such as "es"). */
+  start?: string;
+  /** Show the language chips (false on a single language's page). */
+  pick?: boolean;
+}
+
+const { start = 'es', pick = true } = Astro.props;
+const words = appWords.words as Record<string, { english: string; native: string; imageName: string | null }[]>;
+const demo = appWords.demoWords as string[];
+const SOUNDS = ['cow', 'dog'];
+
+const choices = LANGUAGES.filter((l) => words[l.code]).map((l) => ({ code: l.code, name: l.name, nativeName: l.nativeName, script: scriptClass(l.code) }));
+// People cards show the family each language starts with in the app.
+const looks = (appWords as { defaultLook?: Record<string, string> }).defaultLook ?? {};
+const lookFiles = new Set(Object.keys(import.meta.glob('/public/app/looks/*.webp')).map((p) => p.split('/').pop()!.replace('.webp', '')));
+const art = (code: string, img: string) => {
+  const look = looks[code] ?? 'f0';
+  return lookFiles.has(`${img}_${look}`) ? withBase(`/app/looks/${img}_${look}.webp`) : withBase(`/app/art/${img}.webp`);
+};
+const table = Object.fromEntries(choices.map((c) => [c.code, demo.map((img) => {
+  const w = words[c.code].find((x) => x.imageName === img);
+  const native = w?.native ?? '';
+  const english = w?.english ?? '';
+  // In English the word is its own translation; show it once.
+  return { native, english: native.toLowerCase() === english.toLowerCase() ? '' : english, art: art(c.code, img) };
+})]));
+const first = choices.find((c) => c.code === start) ?? choices[0];
+const base = withBase('/app');
+---
+
+<div class="hear" data-base={base} data-table={JSON.stringify(table)} data-scripts={JSON.stringify(Object.fromEntries(choices.map((c) => [c.code, c.script])))} data-code={first.code}>
+  {pick && (
+    <div class="hear__langs" role="radiogroup" aria-label="Language">
+      {choices.map((c) => (
+        <button type="button" role="radio" class="hear__lang" data-code={c.code} aria-checked={c.code === first.code ? 'true' : 'false'}>
+          <span class:list={['hear__lang-native', c.script]}>{c.nativeName}</span>
+        </button>
+      ))}
+    </div>
+  )}
+
+  <div class="hear__grid">
+    {demo.map((img, i) => (
+      <button type="button" class="hear__card" data-image={img} data-sound={SOUNDS.includes(img) ? 'yes' : undefined} aria-label={`${table[first.code][i].native}${table[first.code][i].english ? `, ${table[first.code][i].english}` : ''}. Plays the word.`}>
+        <img src={table[first.code][i].art} alt="" width="512" height="512" loading="lazy" decoding="async" />
+        <span class:list={['hear__native', first.script]}>{table[first.code][i].native}</span>
+        <span class="hear__english">{table[first.code][i].english}</span>
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const root of document.querySelectorAll<HTMLElement>('.hear')) {
+    const base = root.dataset.base!;
+    const table = JSON.parse(root.dataset.table!) as Record<string, { native: string; english: string; art: string }[]>;
+    const scripts = JSON.parse(root.dataset.scripts!) as Record<string, string>;
+    const cards = [...root.querySelectorAll<HTMLButtonElement>('.hear__card')];
+    let playing: HTMLAudioElement | null = null;
+
+    const setLanguage = (code: string) => {
+      root.dataset.code = code;
+      for (const b of root.querySelectorAll<HTMLButtonElement>('.hear__lang')) b.setAttribute('aria-checked', String(b.dataset.code === code));
+      cards.forEach((card, i) => {
+        const w = table[code][i];
+        const nat = card.querySelector('.hear__native')!;
+        nat.textContent = w.native;
+        nat.className = `hear__native ${scripts[code] ?? ''}`;
+        card.querySelector('.hear__english')!.textContent = w.english;
+        card.querySelector('img')!.src = w.art;
+        card.setAttribute('aria-label', `${w.native}${w.english ? `, ${w.english}` : ''}. Plays the word.`);
+      });
+    };
+
+    const pop = (card: HTMLElement) => {
+      if (reduce) return;
+      card.animate([{ scale: '1' }, { scale: '1.06' }, { scale: '1' }], { duration: 320, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+    };
+    const wiggle = (card: HTMLElement) => {
+      if (reduce) return;
+      card.animate([{ rotate: '0deg' }, { rotate: '-4deg' }, { rotate: '4deg' }, { rotate: '-3deg' }, { rotate: '0deg' }], { duration: 470, easing: 'ease-in-out' });
+    };
+
+    const play = (card: HTMLButtonElement) => {
+      const code = root.dataset.code!;
+      const image = card.dataset.image!;
+      playing?.pause();
+      const word = new Audio(`${base}/audio/${code}/${image}.mp3`);
+      playing = word;
+      pop(card);
+      if (card.dataset.sound) {
+        word.addEventListener('ended', () => {
+          if (playing !== word) return;
+          const sfx = new Audio(`${base}/sfx/${image}.mp3`);
+          playing = sfx;
+          sfx.addEventListener('playing', () => wiggle(card), { once: true });
+          sfx.play().catch(() => {});
+        }, { once: true });
+      }
+      word.play().catch(() => {});
+    };
+
+    // Speak on touch-down, as the app does; keyboard users get it on Enter or Space.
+    for (const card of cards) {
+      card.addEventListener('pointerdown', () => play(card));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(card); } });
+    }
+    for (const b of root.querySelectorAll<HTMLButtonElement>('.hear__lang')) b.addEventListener('click', () => setLanguage(b.dataset.code!));
+  }
+</script>
+
+<style>
+  .hear {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .hear__langs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .hear__lang {
+    border: 0;
+    border-radius: var(--radius-full);
+    padding: 8px 14px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .hear__lang:hover {
+    color: var(--color-text);
+  }
+
+  .hear__lang[aria-checked='true'] {
+    background: var(--color-accent);
+    color: var(--color-surface);
+    box-shadow: none;
+  }
+
+  .hear__lang-native.script-urdu {
+    line-height: 1.4;
+  }
+
+  .hear__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 1000px) {
+    .hear__grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  .hear__card {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-3) var(--space-4);
+    border: 0;
+    border-radius: 24px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hear__card img {
+    width: min(100%, 150px);
+    height: auto;
+    aspect-ratio: 1;
+    pointer-events: none;
+  }
+
+  .hear__native {
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .hear__native.script-urdu {
+    line-height: 2;
+  }
+
+  .hear__english {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 560px) {
+    .hear__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

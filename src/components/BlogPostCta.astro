@@ -1,18 +1,19 @@
 ---
-import languagesData from '../data/languages.json';
+import { languageBySlug } from '../lib/catalog';
 import { withBase } from '../utils/withBase';
 
 interface Props { language?: string | null; }
 const { language } = Astro.props;
 
-const lang = language ? languagesData.languages.find((l) => l.slug === language) : null;
+const lang = languageBySlug(language);
 const ctaHref = lang ? withBase(`/l/${lang.slug}`) : withBase('/languages');
-const ctaTitle = lang ? `Teach your toddler ${lang.name}` : 'Teach your toddler a new language';
+const ctaTitle = lang ? `First words in ${lang.name}` : 'First words in your family\'s language';
+const where = lang?.appName ? ` It's in ${lang.appName}` : '';
+const when = lang?.status === 'available' ? ', on the App Store now.' : lang?.appName ? ', coming soon to the App Store.' : '';
 const ctaBody = lang
-  ? `First 100 ${lang.name} — tap a picture, hear the word, no ads. ${lang.status === 'available' ? 'Available now on iOS and Android.' : 'Coming soon.'}`
-  : 'First 100 is a series of toddler-friendly language apps. Pick a language and get started.';
+  ? `Tap a picture, hear the word in ${lang.name}. No ads, no subscriptions.${where}${when}`
+  : 'Tap a picture, hear the word, in 17 languages. No ads, no subscriptions.';
 ---
-
 <aside class="blog-cta">
   <div class="blog-cta__inner">
     <h3 class="blog-cta__title">{ctaTitle}</h3>
@@ -23,7 +24,7 @@ const ctaBody = lang
       data-cta="blog-post"
       data-cta-language={lang ? lang.slug : ''}
     >
-      {lang ? `Get First 100 ${lang.name} →` : 'Browse languages →'}
+      {lang ? `See First100 in ${lang.name} →` : 'Find your language →'}
     </a>
   </div>
 </aside>
