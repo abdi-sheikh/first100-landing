@@ -37,3 +37,7 @@ npm-debug.log*
 
 # Astro
 .astro/
+
+# Agent and editor tooling (internal)
+.codex/
+devbrain-handbook/
