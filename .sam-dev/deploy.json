@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "provider": "github-actions",
+  "environments": {
+    "production": {
+      "command": "git push origin HEAD:refs/heads/main",
+      "healthcheck": "https://www.first100.org/",
+      "required_env": []
+    }
+  }
+}

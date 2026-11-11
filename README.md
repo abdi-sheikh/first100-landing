@@ -3,11 +3,19 @@
 The website for First100 (www.first100.org): First100: World Languages (17 languages in one app)
 and the languages with their own app, starting with Somali. Read `docs/DESIGN.md` before changing a page.
 
-## When First100 World goes live
+## App Store availability
 
-Put its App Store ID in `WORLD.appStoreId` in `src/data/apps.ts` and push to `main`. Every World
-language page, the homepage and the languages page switch from "Coming soon" to Apple's badge.
-Prices and future packs live in `PRICING` in the same file; shared FAQ answers in `src/data/faq.ts`.
+[First100: World Languages](https://apps.apple.com/app/id6816693260) is live with 17 languages.
+`WORLD.appStoreId` in `src/data/apps.ts` controls its download badges, language availability and
+Safari Smart App Banners. Prices and future packs live in `PRICING` in the same file; shared FAQ
+answers in `src/data/faq.ts`.
+
+## Production deployment
+
+GitHub Pages builds and publishes pushes to `main` through `.github/workflows/deploy.yml`.
+The reviewed `.sam-dev/deploy.json` contract publishes the current commit with a regular push
+to `origin/main`. Run `dev deploy abdi-first100-landing production` for preflight, then use
+`--apply` to publish after the checks below pass.
 
 ## Keeping the site in step with the app
 

@@ -18,7 +18,7 @@ export interface App {
 export const WORLD: App = {
   id: 'world',
   name: 'First100: World Languages',
-  appStoreId: null,
+  appStoreId: '6816693260',
 };
 
 export const SOMALI: App = {
