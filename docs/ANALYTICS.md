@@ -32,12 +32,14 @@ from growth reports.
 
 ## Search Console
 
-Prefer a Domain property for `first100.org`, covering both apex and www. It requires a
-Google-issued DNS verification record and access to the domain's DNS provider. A URL-prefix
-property for `https://www.first100.org/` can instead use a deployed HTML file or meta tag.
+The URL-prefix property is `https://www.first100.org/`. Its HTML verification file is
+`public/google67d1a39618a7e8ea.html`, served unchanged at
+`https://www.first100.org/google67d1a39618a7e8ea.html`. Keep this file in the repository and
+deployed output; Google periodically checks it to confirm ownership.
 
-Submit `https://www.first100.org/sitemap-index.xml` after verification. Keep the verification
-record or file in place. Google Analytics is not required.
+The sitemap to submit is `https://www.first100.org/sitemap-index.xml`. Google Analytics is
+not required. A future Domain property for `first100.org` would cover apex, www and other
+subdomains, and would require DNS verification.
 
 References: [ownership verification](https://support.google.com/webmasters/answer/9008080),
 [PostHog events](https://posthog.com/docs/product-analytics/capture-events).
