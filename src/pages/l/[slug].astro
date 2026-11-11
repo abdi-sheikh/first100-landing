@@ -73,7 +73,7 @@ const description = inWorld
         {nativeName !== name && <p class:list={['lhero__native', script]} lang={code}>{nativeName}</p>}
         <p class="lhero__lede">{lede}</p>
         {hasApp ? (
-          <AppStoreBadge href={appStore} appName={appName ?? name} size="large" notifyHref="#notify" cta={`language-${language.slug}`} />
+          <AppStoreBadge href={appStore} appName={appName ?? name} language={language.slug} languageCode={code} size="large" notifyHref="#notify" cta={`language-${language.slug}`} />
         ) : (
           <a class="lhero__notify" href="#notify">Tell me when it's ready →</a>
         )}

@@ -72,6 +72,11 @@ Optional environment overrides:
 HOST=0.0.0.0 PORT=4322 npm run dev:server
 ```
 
+## Analytics
+
+See [website analytics](docs/ANALYTICS.md) for the App Store click event, verification
+procedure and Search Console setup.
+
 ## Testing and verification
 
 ### Run tests

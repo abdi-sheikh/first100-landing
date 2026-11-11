@@ -11,14 +11,16 @@ interface Props {
   /** Where a "tell me when it's out" link should go while the app isn't live. */
   notifyHref?: string | null;
   cta?: string;
+  language?: string | null;
+  languageCode?: string | null;
 }
 
-const { href, appName, size = 'medium', notifyHref = null, cta = 'app-store' } = Astro.props;
+const { href, appName, size = 'medium', notifyHref = null, cta = 'app-store', language = null, languageCode = null } = Astro.props;
 const badge = withBase('/app/badge/app-store.svg');
 ---
 
 {href ? (
-  <a class:list={['badge', `badge--${size}`]} href={href} target="_blank" rel="noopener" data-cta={cta} aria-label={`Download ${appName} on the App Store`}>
+  <a class:list={['badge', `badge--${size}`]} href={href} target="_blank" rel="noopener" data-cta={cta} data-app-store data-app-name={appName} data-language={language} data-language-code={languageCode} aria-label={`Download ${appName} on the App Store`}>
     <img src={badge} alt="" width="120" height="40" />
   </a>
 ) : (
@@ -29,6 +31,33 @@ const badge = withBase('/app/badge/app-store.svg');
     {notifyHref && <a class="soon__notify" href={notifyHref}>Tell me when it's out</a>}
   </div>
 )}
+
+<script>
+  type AnalyticsWindow = Window & {
+    posthog?: { capture: (event: string, properties: Record<string, string | null>) => unknown };
+  };
+
+  // Astro runs this once per page, including when the page has several badges.
+  // Keep the native link working when analytics is blocked or has not loaded.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-app-store]').forEach((link) => {
+    const trackClick = () => {
+      (window as AnalyticsWindow).posthog?.capture('app_store_click', {
+        product: 'first100-web',
+        app_name: link.dataset.appName ?? null,
+        placement: link.dataset.cta ?? 'app-store',
+        language: link.dataset.language ?? null,
+        language_code: link.dataset.languageCode ?? null,
+        page_path: window.location.pathname,
+        app_store_url: link.href,
+      });
+    };
+
+    link.addEventListener('click', trackClick);
+    link.addEventListener('auxclick', (event) => {
+      if (event.button === 1) trackClick();
+    });
+  });
+</script>
 
 <style>
   .badge {
